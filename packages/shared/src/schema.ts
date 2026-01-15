@@ -4,9 +4,9 @@ import {
   index,
   jsonb,
   pgTable,
+  primaryKey,
   smallint,
   timestamp,
-  uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
 
@@ -29,11 +29,9 @@ export const SLOT_IDS = {
 export const charactersGlamour = pgTable(
   'characters_glamour',
   {
-    /** 主キー（UUID自動生成） */
-    id: uuid('id').primaryKey().defaultRandom(),
-    /** LodestoneキャラクターID */
+    /** LodestoneキャラクターID（複合主キー） */
     characterId: varchar('character_id', { length: 20 }).notNull(),
-    /** 部位ID（1:head, 2:body, 3:hands, 4:legs, 5:feet） */
+    /** 部位ID（複合主キー: 1:head, 2:body, 3:hands, 4:legs, 5:feet） */
     slotId: smallint('slot_id').notNull(),
     /** Lodestone装備ID（URLは /lodestone/playguide/db/item/{itemId}/ で再構築） */
     itemId: varchar('item_id', { length: 20 }).notNull(),
@@ -41,10 +39,10 @@ export const charactersGlamour = pgTable(
     fetchedAt: timestamp('fetched_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
-    // インデックス
-    index('idx_character_id').on(table.characterId),
-    index('idx_slot_id').on(table.slotId),
-    index('idx_fetched_at').on(table.fetchedAt),
+    // 複合主キー
+    primaryKey({ columns: [table.characterId, table.slotId] }),
+    // 複合インデックス: ペア集計クエリ用 (slot_id → character_id → item_id)
+    index('idx_slot_character_item').on(table.slotId, table.characterId, table.itemId),
     // CHECK制約：1-5のみ許可
     check('slot_id_check', sql`${table.slotId} BETWEEN 1 AND 5`),
   ],

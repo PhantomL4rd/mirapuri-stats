@@ -103,7 +103,7 @@ export function createGlamourRepository(db: Database): GlamourRepository {
     async characterExists(characterId: string): Promise<boolean> {
       try {
         const rows = await db
-          .select({ id: charactersGlamour.id })
+          .select({ characterId: charactersGlamour.characterId })
           .from(charactersGlamour)
           .where(eq(charactersGlamour.characterId, characterId))
           .limit(1);
