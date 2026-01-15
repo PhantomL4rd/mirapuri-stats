@@ -1,0 +1,24 @@
+name: Build Scraper Image
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/scraper/**'
+      - 'packages/shared/**'
+      - 'pnpm-lock.yaml'
+  workflow_dispatch: # 手動実行用
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Build and push image
+        run: fly deploy --build-only --push
+        working-directory: apps/scraper
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
