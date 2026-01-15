@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { GlamourData, RepositoryResult } from '@mirapuri/shared';
+import type { GlamourData } from '@mirapuri/shared';
 import type { Database } from '@mirapuri/shared/db';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRepository, type GlamourRepository } from './repository.js';
 
 // Mock database

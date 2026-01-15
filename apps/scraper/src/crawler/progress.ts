@@ -1,6 +1,6 @@
-import { eq } from 'drizzle-orm';
 import type { Database } from '@mirapuri/shared/db';
 import { crawlProgress } from '@mirapuri/shared/schema';
+import { eq } from 'drizzle-orm';
 
 /**
  * 進捗データ
@@ -26,7 +26,10 @@ export interface ProgressSaveData {
 /**
  * 進捗を読み込み（存在しない場合はnull）
  */
-export async function loadProgress(db: Database, crawlerName: string): Promise<ProgressData | null> {
+export async function loadProgress(
+  db: Database,
+  crawlerName: string,
+): Promise<ProgressData | null> {
   const result = await db
     .select()
     .from(crawlProgress)

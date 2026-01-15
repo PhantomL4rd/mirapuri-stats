@@ -1,5 +1,5 @@
-import type { HttpClient } from '../utils/http-client';
 import { parseCharacterListPage } from '../parsers/character-list';
+import type { HttpClient } from '../utils/http-client';
 import { buildSearchUrl, type SearchKey } from './search-key-generator';
 
 /**

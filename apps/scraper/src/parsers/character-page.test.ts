@@ -123,7 +123,13 @@ describe('Parser', () => {
       const result = parseGlamourData(html);
 
       expect(result).toHaveLength(5);
-      expect(result.map((r: GlamourData) => r.slot)).toEqual(['head', 'body', 'hands', 'legs', 'feet']);
+      expect(result.map((r: GlamourData) => r.slot)).toEqual([
+        'head',
+        'body',
+        'hands',
+        'legs',
+        'feet',
+      ]);
     });
   });
 

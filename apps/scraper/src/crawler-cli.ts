@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 import 'dotenv/config';
 import { createDb } from '@mirapuri/shared/db';
-import { createHttpClient } from './utils/http-client';
-import { createRepository } from './repository';
-import { createScraper } from './scraper';
 import {
-  createCrawler,
   createCharacterListFetcher,
+  createCrawler,
   createRetryHttpClient,
   createSearchKeyGenerator,
   DATA_CENTERS,
-  resolveWorlds,
   type DataCenterName,
+  resolveWorlds,
   type SearchKeyGeneratorConfig,
 } from './crawler';
+import { createRepository } from './repository';
+import { createScraper } from './scraper';
+import { createHttpClient } from './utils/http-client';
 
 interface ParsedArgs {
   dryRun: boolean;
@@ -67,7 +67,9 @@ async function main() {
 
   console.log('=== Character List Crawler ===');
   console.log(`Mode: ${dryRun ? 'DRY RUN' : 'LIVE'}`);
-  console.log(`Target: ${dataCenter ? `DC: ${dataCenter} (${targetWorlds.length} worlds)` : `World: ${targetWorlds.join(', ')}`}`);
+  console.log(
+    `Target: ${dataCenter ? `DC: ${dataCenter} (${targetWorlds.length} worlds)` : `World: ${targetWorlds.join(', ')}`}`,
+  );
   console.log(`Crawler Name: ${crawlerName}`);
 
   // コンポーネント初期化
@@ -81,7 +83,9 @@ async function main() {
         db: null as never, // dryRunでは使用しない
         keyGenerator,
         listFetcher: { fetchAllCharacterIds: async () => [] },
-        scraper: { scrape: async () => ({ success: true, characterId: '', savedCount: 0, errors: [] }) },
+        scraper: {
+          scrape: async () => ({ success: true, characterId: '', savedCount: 0, errors: [] }),
+        },
         characterExists: async () => false,
       },
     );

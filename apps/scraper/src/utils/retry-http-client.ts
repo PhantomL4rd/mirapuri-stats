@@ -48,7 +48,10 @@ export function createRetryHttpClient(
 
       while (attempt < finalConfig.maxRetries - 1) {
         // 成功またはリトライ不要なエラーの場合は即座に返す
-        if (lastResult.success || !finalConfig.retryableStatusCodes.includes(lastResult.statusCode)) {
+        if (
+          lastResult.success ||
+          !finalConfig.retryableStatusCodes.includes(lastResult.statusCode)
+        ) {
           return lastResult;
         }
 

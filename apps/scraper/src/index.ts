@@ -1,9 +1,9 @@
 import 'dotenv/config';
 import { createDb } from '@mirapuri/shared';
-import { createHttpClient } from './utils/http-client.js';
-import { logger } from './utils/logger.js';
 import { createGlamourRepository } from './repository.js';
 import { createScraper } from './scraper.js';
+import { createHttpClient } from './utils/http-client.js';
+import { logger } from './utils/logger.js';
 
 /**
  * メインエントリーポイント

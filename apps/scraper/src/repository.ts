@@ -1,7 +1,7 @@
-import { eq } from 'drizzle-orm';
 import type { GlamourData, RepositoryResult } from '@mirapuri/shared';
-import { charactersGlamour, SLOT_IDS } from '@mirapuri/shared/schema';
 import type { Database } from '@mirapuri/shared/db';
+import { charactersGlamour, SLOT_IDS } from '@mirapuri/shared/schema';
+import { eq } from 'drizzle-orm';
 import { logger } from './utils/logger.js';
 
 /**
@@ -40,7 +40,10 @@ export function createRepository(db: Database): GlamourRepository {
  */
 export function createGlamourRepository(db: Database): GlamourRepository {
   return {
-    async saveGlamourData(characterId: string, glamourData: GlamourData[]): Promise<RepositoryResult> {
+    async saveGlamourData(
+      characterId: string,
+      glamourData: GlamourData[],
+    ): Promise<RepositoryResult> {
       // itemIdがnullのデータをフィルタリング
       const validData = glamourData.filter((d) => d.itemId !== null);
 

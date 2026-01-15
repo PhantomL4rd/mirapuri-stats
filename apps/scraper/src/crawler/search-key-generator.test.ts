@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ALL_JP_WORLDS,
   buildSearchUrl,
-  createSearchKeyGenerator,
   CLASSJOBS,
+  createSearchKeyGenerator,
+  DATA_CENTERS,
   GCIDS,
   RACE_TRIBES,
-  DATA_CENTERS,
-  ALL_JP_WORLDS,
 } from './search-key-generator';
 
 describe('search-key-generator', () => {

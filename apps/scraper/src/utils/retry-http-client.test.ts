@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { HttpClient } from './http-client';
 import { createRetryHttpClient, DEFAULT_RETRY_CONFIG } from './retry-http-client';
 
@@ -11,7 +11,9 @@ describe('retry-http-client', () => {
     vi.useRealTimers();
   });
 
-  function createMockClient(responses: Array<{ success: boolean; statusCode: number; html?: string; error?: string }>): HttpClient {
+  function createMockClient(
+    responses: Array<{ success: boolean; statusCode: number; html?: string; error?: string }>,
+  ): HttpClient {
     let callIndex = 0;
     return {
       fetchWithRateLimit: vi.fn().mockImplementation(async () => {
@@ -24,7 +26,9 @@ describe('retry-http-client', () => {
 
   describe('正常系', () => {
     it('成功レスポンスをそのまま返す', async () => {
-      const baseClient = createMockClient([{ success: true, statusCode: 200, html: '<html></html>' }]);
+      const baseClient = createMockClient([
+        { success: true, statusCode: 200, html: '<html></html>' },
+      ]);
       const client = createRetryHttpClient(baseClient);
 
       const result = await client.fetchWithRateLimit('https://example.com');

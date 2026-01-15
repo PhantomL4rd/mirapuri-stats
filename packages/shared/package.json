@@ -12,6 +12,10 @@
       "types": "./dist/schema.d.ts",
       "import": "./dist/schema.js"
     },
+    "./d1-schema": {
+      "types": "./dist/d1-schema.d.ts",
+      "import": "./dist/d1-schema.js"
+    },
     "./db": {
       "types": "./dist/db.d.ts",
       "import": "./dist/db.js"

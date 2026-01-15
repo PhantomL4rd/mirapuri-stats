@@ -28,19 +28,44 @@ export const ALL_JP_WORLDS = [
  */
 export const CLASSJOBS = [
   // タンク (4)
-  19, 21, 32, 37, // ナイト, 戦士, 暗黒騎士, ガンブレイカー
+  19,
+  21,
+  32,
+  37, // ナイト, 戦士, 暗黒騎士, ガンブレイカー
   // ヒーラー (4)
-  24, 28, 33, 40, // 白魔道士, 学者, 占星術師, 賢者
+  24,
+  28,
+  33,
+  40, // 白魔道士, 学者, 占星術師, 賢者
   // 近接DPS (6)
-  20, 22, 30, 34, 39, 41, // モンク, 竜騎士, 忍者, 侍, リーパー, ヴァイパー
+  20,
+  22,
+  30,
+  34,
+  39,
+  41, // モンク, 竜騎士, 忍者, 侍, リーパー, ヴァイパー
   // 遠隔物理DPS (3)
-  23, 31, 38, // 吟遊詩人, 機工士, 踊り子
+  23,
+  31,
+  38, // 吟遊詩人, 機工士, 踊り子
   // 遠隔魔法DPS (4)
-  25, 27, 35, 42, // 黒魔道士, 召喚士, 赤魔道士, ピクトマンサー
+  25,
+  27,
+  35,
+  42, // 黒魔道士, 召喚士, 赤魔道士, ピクトマンサー
   // クラフター (8)
-  8, 9, 10, 11, 12, 13, 14, 15, // 木工〜調理
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15, // 木工〜調理
   // ギャザラー (3)
-  16, 17, 18, // 採掘, 園芸, 漁師
+  16,
+  17,
+  18, // 採掘, 園芸, 漁師
 ] as const;
 
 /**
@@ -63,7 +88,7 @@ export const RACE_TRIBES = [
   'tribe_13',
   'tribe_14', // ロスガル
   'tribe_15',
-  'tribe_16' // ヴィエラ
+  'tribe_16', // ヴィエラ
 ] as const;
 
 /** グランドカンパニー */
@@ -126,7 +151,9 @@ export function resolveWorlds(config: SearchKeyGeneratorConfig): readonly string
 /**
  * 検索キージェネレーターを作成
  */
-export function createSearchKeyGenerator(config: SearchKeyGeneratorConfig = {}): SearchKeyGenerator {
+export function createSearchKeyGenerator(
+  config: SearchKeyGeneratorConfig = {},
+): SearchKeyGenerator {
   const worlds = resolveWorlds(config);
 
   return {

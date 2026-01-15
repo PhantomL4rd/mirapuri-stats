@@ -1,5 +1,5 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { createCrawler, type CrawlerDependencies } from './crawler';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { type CrawlerDependencies, createCrawler } from './crawler';
 
 // 進捗関数をモック
 vi.mock('./progress', () => ({
@@ -26,7 +26,9 @@ function createMockDeps(overrides: Partial<CrawlerDependencies> = {}): CrawlerDe
       fetchAllCharacterIds: vi.fn().mockResolvedValue(['11111111', '22222222']),
     },
     scraper: {
-      scrape: vi.fn().mockResolvedValue({ success: true, characterId: '11111111', savedCount: 5, errors: [] }),
+      scrape: vi
+        .fn()
+        .mockResolvedValue({ success: true, characterId: '11111111', savedCount: 5, errors: [] }),
     },
     characterExists: vi.fn().mockResolvedValue(false),
     ...overrides,
@@ -111,7 +113,12 @@ describe('crawler', () => {
     it('スクレイプエラーをカウントする', async () => {
       const deps = createMockDeps({
         scraper: {
-          scrape: vi.fn().mockResolvedValue({ success: false, characterId: '11111111', savedCount: 0, errors: [{ type: 'HTTP_ERROR', message: 'Error' }] }),
+          scrape: vi.fn().mockResolvedValue({
+            success: false,
+            characterId: '11111111',
+            savedCount: 0,
+            errors: [{ type: 'HTTP_ERROR', message: 'Error' }],
+          }),
         },
       });
       const crawler = createCrawler({ crawlerName: 'test', dryRun: false }, deps);

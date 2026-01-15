@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { HttpClient } from '../utils/http-client';
 import { createCharacterListFetcher } from './character-list-fetcher';
 import type { SearchKey } from './search-key-generator';
@@ -12,7 +12,9 @@ describe('character-list-fetcher', () => {
     gcid: 1,
   };
 
-  function createMockHttpClient(responses: Map<string, { success: boolean; statusCode: number; html?: string; error?: string }>): HttpClient {
+  function createMockHttpClient(
+    responses: Map<string, { success: boolean; statusCode: number; html?: string; error?: string }>,
+  ): HttpClient {
     return {
       fetchWithRateLimit: vi.fn().mockImplementation(async (url: string) => {
         for (const [pattern, response] of responses) {
@@ -56,7 +58,7 @@ describe('character-list-fetcher', () => {
       responses.set('classjob=19', { success: true, statusCode: 200, html: page1Html });
 
       const httpClient = createMockHttpClient(responses);
-      const fetcher = createCharacterListFetcher(httpClient);
+      const _fetcher = createCharacterListFetcher(httpClient);
 
       // ページ1のみで終わるようにhtmlを調整
       const page1OnlyHtml = `
@@ -68,7 +70,9 @@ describe('character-list-fetcher', () => {
         </a></div>
       `;
       const httpClient2 = {
-        fetchWithRateLimit: vi.fn().mockResolvedValue({ success: true, statusCode: 200, html: page1OnlyHtml }),
+        fetchWithRateLimit: vi
+          .fn()
+          .mockResolvedValue({ success: true, statusCode: 200, html: page1OnlyHtml }),
       };
       const fetcher2 = createCharacterListFetcher(httpClient2);
 
@@ -86,11 +90,15 @@ describe('character-list-fetcher', () => {
             return { success: true, statusCode: 200, html: page1Html };
           }
           // ページ2: 次ページなし
-          return { success: true, statusCode: 200, html: `
+          return {
+            success: true,
+            statusCode: 200,
+            html: `
             <div class="entry"><a href="/lodestone/character/33333333/" class="entry__link">
               <ul class="entry__chara_info"><li><span>100</span></li></ul>
             </a></div>
-          ` };
+          `,
+          };
         }),
       };
       const fetcher = createCharacterListFetcher(httpClient);
@@ -125,7 +133,9 @@ describe('character-list-fetcher', () => {
 
     it('HTTPエラー時は空配列を返す', async () => {
       const httpClient = {
-        fetchWithRateLimit: vi.fn().mockResolvedValue({ success: false, statusCode: 500, error: 'Server Error' }),
+        fetchWithRateLimit: vi
+          .fn()
+          .mockResolvedValue({ success: false, statusCode: 500, error: 'Server Error' }),
       };
       const fetcher = createCharacterListFetcher(httpClient);
 
@@ -137,7 +147,9 @@ describe('character-list-fetcher', () => {
     it('検索結果0件の場合は空配列を返す', async () => {
       const emptyHtml = `<p class="parts__zero">条件に一致するキャラクターが存在しません。</p>`;
       const httpClient = {
-        fetchWithRateLimit: vi.fn().mockResolvedValue({ success: true, statusCode: 200, html: emptyHtml }),
+        fetchWithRateLimit: vi
+          .fn()
+          .mockResolvedValue({ success: true, statusCode: 200, html: emptyHtml }),
       };
       const fetcher = createCharacterListFetcher(httpClient);
 
@@ -156,7 +168,9 @@ describe('character-list-fetcher', () => {
         </a></div>
       `;
       const httpClient = {
-        fetchWithRateLimit: vi.fn().mockResolvedValue({ success: true, statusCode: 200, html: htmlWithLv90 }),
+        fetchWithRateLimit: vi
+          .fn()
+          .mockResolvedValue({ success: true, statusCode: 200, html: htmlWithLv90 }),
       };
       const fetcher = createCharacterListFetcher(httpClient, { minLevel: 90 });
 
