@@ -1,18 +1,17 @@
 # Fly.io Machine configuration for mirapuri crawler
 #
-# Usage (from repo root):
-#   fly machine run . --config apps/scraper/fly.toml [-- <args>]
+# Build image (from repo root):
+#   flyctl deploy --build-only --push --app mirapuri-stats --dockerfile apps/scraper/Dockerfile
+#
+# Run machine (from repo root):
+#   fly machine run . --app mirapuri-stats --dockerfile apps/scraper/Dockerfile [-- <args>]
 #
 # Examples:
-#   fly machine run . --config apps/scraper/fly.toml                    # Tiamat (default)
-#   fly machine run . --config apps/scraper/fly.toml -- --world Bahamut # Single world
-#   fly machine run . --config apps/scraper/fly.toml -- --dc Gaia       # Full DC (8 worlds)
+#   fly machine run . --app mirapuri-stats --dockerfile apps/scraper/Dockerfile
+#   fly machine run . --app mirapuri-stats --dockerfile apps/scraper/Dockerfile -- --dc Gaia
 
 app = "mirapuri-stats"
 primary_region = "nrt"  # Tokyo
-
-[build]
-  dockerfile = "Dockerfile"
 
 # Machine resources
 # shared-cpu-1x is enough for crawler (it's I/O bound, not CPU bound)

@@ -21,7 +21,6 @@ jobs:
           version: latest
 
       - name: Build and push image
-        run: flyctl deploy --build-only --push
-        working-directory: apps/scraper
+        run: flyctl deploy --build-only --push --app mirapuri-stats --dockerfile apps/scraper/Dockerfile
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
