@@ -12,7 +12,7 @@ app = "mirapuri-stats"
 primary_region = "nrt"  # Tokyo
 
 [build]
-  dockerfile = "apps/scraper/Dockerfile"
+  dockerfile = "Dockerfile"
 
 # Machine resources
 # shared-cpu-1x is enough for crawler (it's I/O bound, not CPU bound)
