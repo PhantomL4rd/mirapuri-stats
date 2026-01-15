@@ -18,7 +18,7 @@ primary_region = "nrt"  # Tokyo
 # shared-cpu-1x is enough for crawler (it's I/O bound, not CPU bound)
 [[vm]]
   size = "shared-cpu-1x"
-  memory = "512mb"
+  memory = "256mb"
 
 [env]
   NODE_ENV = "production"
