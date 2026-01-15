@@ -30,6 +30,10 @@ export function parseGlamourData(html: string): GlamourData[] {
     const itemUrl = $mirage.find('a').attr('href') ?? null;
     const itemId = extractItemId(itemUrl);
 
+    // 装備名を取得（<p>タグ内のテキストノードのみ、<a>タグの「詳細」を除外）
+    const $p = $mirage.find('p');
+    const itemName = extractItemName($, $p);
+
     // 部位を取得（親要素の次にあるcategoryから）
     const $parent = $mirage.parent();
     const categoryText = $parent.find('.db-tooltip__item__category').text().trim();
@@ -42,9 +46,31 @@ export function parseGlamourData(html: string): GlamourData[] {
       results.push({
         slot,
         itemId,
+        itemName,
       });
     }
   });
 
   return results;
+}
+
+/**
+ * <p>タグから装備名を抽出（<a>タグのテキストを除外）
+ */
+function extractItemName(
+  $: cheerio.CheerioAPI,
+  $p: ReturnType<cheerio.CheerioAPI>,
+): string | null {
+  if ($p.length === 0) return null;
+
+  // テキストノードのみを取得（子要素のテキストは除外）
+  let name = '';
+  $p.contents().each((_, node) => {
+    if (node.type === 'text') {
+      name += $(node).text();
+    }
+  });
+
+  const trimmed = name.trim();
+  return trimmed || null;
 }

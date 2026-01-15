@@ -6,9 +6,19 @@ import { createRepository, type GlamourRepository } from './repository.js';
 // Mock database
 const mockInsert = vi.fn();
 const mockValues = vi.fn();
+const mockOnConflictDoNothing = vi.fn();
 
 const createMockDb = () => {
-  mockValues.mockResolvedValue(undefined);
+  mockOnConflictDoNothing.mockResolvedValue(undefined);
+  // values() は Promise を返すか、onConflictDoNothing チェーンをサポート
+  mockValues.mockImplementation(() => {
+    const result = Promise.resolve(undefined) as Promise<undefined> & {
+      onConflictDoNothing: typeof mockOnConflictDoNothing;
+    };
+    // onConflictDoNothing をチェーン可能にする
+    result.onConflictDoNothing = mockOnConflictDoNothing;
+    return result;
+  });
   mockInsert.mockReturnValue({ values: mockValues });
   return {
     insert: mockInsert,
@@ -21,6 +31,7 @@ describe('repository', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockOnConflictDoNothing.mockResolvedValue(undefined);
     mockDb = createMockDb();
     repository = createRepository(mockDb);
   });
@@ -36,16 +47,18 @@ describe('repository', () => {
 
     it('ミラプリデータを正しくINSERTする', async () => {
       const glamourData: GlamourData[] = [
-        { slot: 'head', itemId: 'abc123' },
-        { slot: 'body', itemId: 'def456' },
+        { slot: 'head', itemId: 'abc123', itemName: '頭装備' },
+        { slot: 'body', itemId: 'def456', itemName: '胴装備' },
       ];
 
       const result = await repository.saveGlamourData('12345678', glamourData);
 
       expect(result.success).toBe(true);
       expect(result.insertedCount).toBe(2);
-      expect(mockInsert).toHaveBeenCalledTimes(1);
-      expect(mockValues).toHaveBeenCalledWith([
+      // charactersGlamour と itemsCache の2回呼ばれる
+      expect(mockInsert).toHaveBeenCalledTimes(2);
+      // 最初の呼び出しは charactersGlamour
+      expect(mockValues).toHaveBeenNthCalledWith(1, [
         { characterId: '12345678', slotId: 1, itemId: 'abc123' },
         { characterId: '12345678', slotId: 2, itemId: 'def456' },
       ]);
@@ -53,11 +66,11 @@ describe('repository', () => {
 
     it('スロット名からスロットIDへ正しく変換する', async () => {
       const glamourData: GlamourData[] = [
-        { slot: 'head', itemId: 'item1' },
-        { slot: 'body', itemId: 'item2' },
-        { slot: 'hands', itemId: 'item3' },
-        { slot: 'legs', itemId: 'item4' },
-        { slot: 'feet', itemId: 'item5' },
+        { slot: 'head', itemId: 'item1', itemName: '頭装備' },
+        { slot: 'body', itemId: 'item2', itemName: '胴装備' },
+        { slot: 'hands', itemId: 'item3', itemName: '手装備' },
+        { slot: 'legs', itemId: 'item4', itemName: '脚装備' },
+        { slot: 'feet', itemId: 'item5', itemName: '足装備' },
       ];
 
       await repository.saveGlamourData('12345678', glamourData);
@@ -73,9 +86,9 @@ describe('repository', () => {
 
     it('itemIdがnullのデータはスキップする', async () => {
       const glamourData: GlamourData[] = [
-        { slot: 'head', itemId: 'abc123' },
-        { slot: 'body', itemId: null },
-        { slot: 'hands', itemId: 'ghi789' },
+        { slot: 'head', itemId: 'abc123', itemName: '頭装備' },
+        { slot: 'body', itemId: null, itemName: null },
+        { slot: 'hands', itemId: 'ghi789', itemName: '手装備' },
       ];
 
       const result = await repository.saveGlamourData('12345678', glamourData);
@@ -90,8 +103,8 @@ describe('repository', () => {
 
     it('全てnullの場合は0件で成功を返す', async () => {
       const glamourData: GlamourData[] = [
-        { slot: 'head', itemId: null },
-        { slot: 'body', itemId: null },
+        { slot: 'head', itemId: null, itemName: null },
+        { slot: 'body', itemId: null, itemName: null },
       ];
 
       const result = await repository.saveGlamourData('12345678', glamourData);
@@ -102,7 +115,9 @@ describe('repository', () => {
     });
 
     it('データベースエラー時はエラー結果を返す', async () => {
-      const glamourData: GlamourData[] = [{ slot: 'head', itemId: 'abc123' }];
+      const glamourData: GlamourData[] = [
+        { slot: 'head', itemId: 'abc123', itemName: '頭装備' },
+      ];
 
       mockValues.mockRejectedValue(new Error('Connection refused'));
 

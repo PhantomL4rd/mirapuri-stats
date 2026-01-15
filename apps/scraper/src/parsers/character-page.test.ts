@@ -51,6 +51,18 @@ describe('Parser', () => {
       expect(result[0]?.slot).toBe('head');
     });
 
+    it('should extract itemName from p tag text', () => {
+      const html = `
+        <html>
+          ${createMirageSection('ガリーソフォス・キャップ', '/lodestone/playguide/db/item/a4ea44d4e47/', '頭防具')}
+        </html>
+      `;
+
+      const result = parseGlamourData(html);
+
+      expect(result[0]?.itemName).toBe('ガリーソフォス・キャップ');
+    });
+
     it('should extract multiple glamour items', () => {
       const html = `
         <html>

@@ -28,6 +28,8 @@ export interface GlamourData {
   slot: GlamourSlot;
   /** Lodestone装備ID（URLから抽出、null = ミラプリなし） */
   itemId: string | null;
+  /** 装備名（HTMLから抽出） */
+  itemName: string | null;
 }
 
 /**

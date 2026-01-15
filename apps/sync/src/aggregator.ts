@@ -1,4 +1,10 @@
-import { charactersGlamour, SLOT_PAIR_CONFIG, SLOT_PAIRS, type SlotPair } from '@mirapuri/shared';
+import {
+  charactersGlamour,
+  itemsCache,
+  SLOT_PAIR_CONFIG,
+  SLOT_PAIRS,
+  type SlotPair,
+} from '@mirapuri/shared';
 import type * as schema from '@mirapuri/shared/schema';
 import { count, sql } from 'drizzle-orm';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
@@ -22,22 +28,18 @@ export function createAggregator(deps: AggregatorDependencies): Aggregator {
 
   return {
     /**
-     * 一意なアイテム情報を抽出
-     * Note: アイテム名は現時点では取得できないため "Unknown" を設定
+     * items_cache テーブルからアイテム情報を取得
      */
     async extractUniqueItems(): Promise<ExtractedItem[]> {
       const result = await db
-        .selectDistinctOn([charactersGlamour.itemId], {
-          id: charactersGlamour.itemId,
-          slotId: charactersGlamour.slotId,
+        .select({
+          id: itemsCache.id,
+          name: itemsCache.name,
+          slotId: itemsCache.slotId,
         })
-        .from(charactersGlamour);
+        .from(itemsCache);
 
-      return result.map((row) => ({
-        id: row.id,
-        name: 'Unknown', // TODO: Lodestone から取得予定
-        slotId: row.slotId,
-      }));
+      return result;
     },
 
     /**

@@ -1,6 +1,6 @@
 import type { GlamourData, RepositoryResult } from '@mirapuri/shared';
 import type { Database } from '@mirapuri/shared/db';
-import { charactersGlamour, SLOT_IDS } from '@mirapuri/shared/schema';
+import { charactersGlamour, itemsCache, SLOT_IDS } from '@mirapuri/shared/schema';
 import { eq } from 'drizzle-orm';
 import { logger } from './utils/logger.js';
 
@@ -62,6 +62,25 @@ export function createGlamourRepository(db: Database): GlamourRepository {
         }));
 
         await db.insert(charactersGlamour).values(records);
+
+        // items_cache にアイテム情報を UPSERT（装備名がある場合のみ）
+        const itemRecords = validData
+          .filter((d) => d.itemName !== null)
+          .map((d) => ({
+            id: d.itemId as string,
+            name: d.itemName as string,
+            slotId: SLOT_IDS[d.slot],
+          }));
+
+        if (itemRecords.length > 0) {
+          // INSERT ... ON CONFLICT DO NOTHING で既存アイテムは更新しない
+          await db
+            .insert(itemsCache)
+            .values(itemRecords)
+            .onConflictDoNothing({ target: itemsCache.id });
+
+          logger.info('items_cache に UPSERT', { count: itemRecords.length });
+        }
 
         const insertedCount = records.length;
 

@@ -78,3 +78,32 @@ export type CrawlProgress = typeof crawlProgress.$inferSelect;
 
 /** INSERT時の型 */
 export type NewCrawlProgress = typeof crawlProgress.$inferInsert;
+
+/**
+ * アイテムキャッシュテーブル
+ * キャラクターページから取得したアイテム情報をキャッシュ
+ * D1 items テーブルへの同期元として使用
+ */
+export const itemsCache = pgTable(
+  'items_cache',
+  {
+    /** Lodestone装備ID（主キー） */
+    id: varchar('id', { length: 20 }).primaryKey(),
+    /** アイテム名 */
+    name: varchar('name', { length: 200 }).notNull(),
+    /** 部位ID（1:head, 2:body, 3:hands, 4:legs, 5:feet） */
+    slotId: smallint('slot_id').notNull(),
+    /** 初回登録日時 */
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('idx_items_cache_slot_id').on(table.slotId),
+    check('items_cache_slot_id_check', sql`${table.slotId} BETWEEN 1 AND 5`),
+  ],
+);
+
+/** SELECT時の型 */
+export type ItemCache = typeof itemsCache.$inferSelect;
+
+/** INSERT時の型 */
+export type NewItemCache = typeof itemsCache.$inferInsert;
