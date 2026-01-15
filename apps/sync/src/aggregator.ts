@@ -62,6 +62,7 @@ export function createAggregator(deps: AggregatorDependencies): Aggregator {
     /**
      * アイテムごとの使用回数を集計
      * プライバシー保護のため、3人以上使用しているアイテムのみ返す
+     * slot_id も GROUP BY に含めることで idx_slot_character_item インデックスを活用
      */
     async aggregateUsage(): Promise<AggregatedUsage[]> {
       const result = await db
@@ -70,7 +71,7 @@ export function createAggregator(deps: AggregatorDependencies): Aggregator {
           usageCount: count(),
         })
         .from(charactersGlamour)
-        .groupBy(charactersGlamour.itemId)
+        .groupBy(charactersGlamour.slotId, charactersGlamour.itemId)
         .having(sql`count(*) >= ${MIN_COUNT_THRESHOLD}`);
 
       return result.map((row) => ({
