@@ -26,6 +26,7 @@ describe('Scraper', () => {
 
       mockRepository = {
         saveGlamourData: vi.fn(),
+        characterExists: vi.fn(),
       };
 
       scraper = createScraper({

@@ -49,7 +49,7 @@ export const RACE_TRIBES = [
   'tribe_15',
   'tribe_16', // ヴィエラ
   'tribe_17',
-  'tribe_18', // ロナンガード
+  'tribe_18', // ロナンガルデ
 ] as const;
 
 /** グランドカンパニー */

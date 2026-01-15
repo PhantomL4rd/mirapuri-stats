@@ -25,7 +25,7 @@ describe('search-key-generator', () => {
     it('18部族が定義されている', () => {
       expect(RACE_TRIBES).toHaveLength(18);
       expect(RACE_TRIBES[0]).toBe('tribe_1');
-      expect(RACE_TRIBES[17]).toBe('tribe_18');
+      expect(RACE_TRIBES[RACE_TRIBES.length - 1]).toBe('tribe_18');
     });
 
     it('3つのGCが定義されている', () => {
@@ -51,8 +51,8 @@ describe('search-key-generator', () => {
 
       it('インデックスは0から始まる連番', () => {
         const keys = generator.generateAll();
-        expect(keys[0].index).toBe(0);
-        expect(keys[1727].index).toBe(1727);
+        expect(keys[0]?.index).toBe(0);
+        expect(keys[keys.length - 1]?.index).toBe(keys.length - 1);
       });
 
       it('最初のキーはTiamat, ジョブID 19, tribe_1, GC 1', () => {

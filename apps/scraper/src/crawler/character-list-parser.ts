@@ -30,7 +30,7 @@ export function parseCharacterListPage(html: string): CharacterListResult {
 
     // キャラクターIDを抽出（/lodestone/character/{id}/形式）
     const characterIdMatch = link?.match(/\/lodestone\/character\/(\d+)\//);
-    if (!characterIdMatch) {
+    if (!characterIdMatch?.[1]) {
       return; // スキップ
     }
     const characterId = characterIdMatch[1];

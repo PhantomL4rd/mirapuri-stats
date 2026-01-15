@@ -128,7 +128,7 @@ describe('character-list-parser', () => {
       `;
       const result = parseCharacterListPage(htmlWithBadEntry);
       expect(result.characters).toHaveLength(1);
-      expect(result.characters[0].characterId).toBe('12345678');
+      expect(result.characters[0]?.characterId).toBe('12345678');
     });
 
     it('レベルが見つからない場合はスキップする', () => {
@@ -145,7 +145,7 @@ describe('character-list-parser', () => {
       `;
       const result = parseCharacterListPage(htmlWithNoLevel);
       expect(result.characters).toHaveLength(1);
-      expect(result.characters[0].characterId).toBe('87654321');
+      expect(result.characters[0]?.characterId).toBe('87654321');
     });
   });
 });
