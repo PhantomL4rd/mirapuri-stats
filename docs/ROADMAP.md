@@ -7,10 +7,10 @@
 | Phase 1 | ✅ 完了 | PoC（Lodestone構造調査） |
 | Phase 2 | ✅ 完了 | クローラー実装 |
 | Phase 3 | ✅ 完了 | 集計基盤・D1バージョニング |
-| Phase 4 | 📋 未着手 | フロントエンド |
+| Phase 4 | 📋 未着手 | フロントエンド（HonoX に決定） |
 | Phase 5 | 🔄 進行中 | インフラ・運用 |
 
-**次のアクション**: スクレイピング完了後、`pnpm -F @mirapuri/sync dev` で D1 同期実行
+**次のアクション**: スクレイピング完了後、GitHub Actions で Sync 実行 → Phase 4 (HonoX) へ
 
 ---
 
@@ -95,17 +95,24 @@
 
 **目的**: ユーザーが装備の組み合わせを検索できるUIを提供
 
-- [ ] UIモック作成
-- [ ] フレームワーク選定（HonoX or SvelteKit）
+- [ ] HonoX セットアップ（既存 Worker から移行）
 - [ ] 装備検索ページ
 - [ ] 組み合わせランキング表示
-- [ ] Lodestoneへのリンク
+- [ ] Lodestone へのリンク
+- [ ] Islands でインタラクション追加（必要に応じて）
+
+### 技術選定: HonoX
+
+- **理由**: 既存の Hono エコシステムを活かしつつフルスタック化
+- **構成**: HonoX on Cloudflare Workers + D1 直接アクセス
+- **レンダリング**: SSR (JSX) + Islands アーキテクチャ
 
 ### UI/UX 方針
 
 - シンプルな検索ボックス
 - 部位別ランキング表示
 - モバイルファースト
+- 画像なし → インタラクションで補完
 
 ---
 
@@ -113,10 +120,11 @@
 
 **目的**: 本番環境での安定稼働
 
-- [x] Fly.io環境構築
+- [x] Fly.io 環境構築
 - [x] Cloudflare Worker デプロイ
+- [x] Supabase Keep-Alive GH Action（週2回）
+- [x] Sync GH Action（手動実行）
 - [ ] クロールスケジューラ（キュー型）
-- [ ] Supabase疎通GH Action（週2回、自動停止対策）
 - [ ] 名前決め
 
 ### デプロイ済み
@@ -125,6 +133,13 @@
 |----------|-----|
 | Worker | https://mirapuri-worker.pl4rd.workers.dev |
 | D1 Database | `mirapuri-stats` (APAC) |
+
+### GitHub Actions
+
+| Workflow | 説明 | トリガー |
+|----------|------|----------|
+| `supabase-keepalive.yml` | Supabase 自動停止防止 | 週2回 (月・木) |
+| `sync.yml` | Supabase → D1 同期 | 手動 |
 
 ---
 

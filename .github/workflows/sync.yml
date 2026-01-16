@@ -1,0 +1,38 @@
+name: Sync to D1
+
+on:
+  workflow_dispatch: # Manual trigger
+  # Uncomment for monthly schedule:
+  # schedule:
+  #   - cron: '0 0 1 * *' # 1st of each month at 00:00 UTC
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared
+        run: pnpm -F @mirapuri/shared build
+
+      - name: Build sync
+        run: pnpm -F @mirapuri/sync build
+
+      - name: Run sync
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          WORKER_URL: ${{ secrets.WORKER_URL }}
+          WORKER_AUTH_TOKEN: ${{ secrets.WORKER_AUTH_TOKEN }}
+        run: pnpm -F @mirapuri/sync start
