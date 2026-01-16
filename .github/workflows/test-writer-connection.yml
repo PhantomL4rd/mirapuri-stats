@@ -1,0 +1,47 @@
+name: Test Writer Connection
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test CF-Access + Writer connectivity
+        env:
+          WORKER_URL: ${{ secrets.WORKER_URL }}
+          WORKER_AUTH_TOKEN: ${{ secrets.WORKER_AUTH_TOKEN }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+        run: |
+          # Start sync
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "${WORKER_URL}/api/sync/start" \
+            -H "Authorization: Bearer ${WORKER_AUTH_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
+            -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          echo "Response: $BODY"
+          echo "HTTP Code: $HTTP_CODE"
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "❌ Connection failed"
+            exit 1
+          fi
+
+          # Extract version and abort
+          VERSION=$(echo "$BODY" | jq -r '.version')
+          echo "Version: $VERSION"
+
+          ABORT_RESPONSE=$(curl -s -X POST "${WORKER_URL}/api/sync/abort" \
+            -H "Authorization: Bearer ${WORKER_AUTH_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" \
+            -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}" \
+            -d "{\"version\":\"${VERSION}\"}")
+
+          echo "Abort response: $ABORT_RESPONSE"
+          echo "✅ Connection test passed!"
