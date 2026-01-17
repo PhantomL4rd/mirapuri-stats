@@ -10,9 +10,9 @@ import type {
  * バッチサイズ（件数）
  * Writer APIへの1リクエストあたりの最大件数
  */
-const DEFAULT_ITEMS_CHUNK_SIZE = 500;
-const DEFAULT_USAGE_CHUNK_SIZE = 1000;
-const DEFAULT_PAIRS_CHUNK_SIZE = 1000;
+const DEFAULT_ITEMS_CHUNK_SIZE = 100;
+const DEFAULT_USAGE_CHUNK_SIZE = 500;
+const DEFAULT_PAIRS_CHUNK_SIZE = 500;
 
 const DEFAULT_CHUNK_SIZES = {
   items: DEFAULT_ITEMS_CHUNK_SIZE,
@@ -173,7 +173,11 @@ export function createWriterClient(config: WriterClientConfig): WriterClient {
       let totalInserted = 0;
       let totalSkipped = 0;
 
-      for (const batch of chunks) {
+      for (let i = 0; i < chunks.length; i++) {
+        const batch = chunks[i]!;
+        const startTime = Date.now();
+        console.log(`[Writer] Posting items batch ${i + 1}/${chunks.length} (${batch.length} items)...`);
+
         const response = await fetchWithRetry(`${config.baseUrl}/api/items`, {
           method: 'POST',
           headers: getHeaders(),
@@ -194,6 +198,9 @@ export function createWriterClient(config: WriterClientConfig): WriterClient {
         const result = (await response.json()) as WriterResponse;
         totalInserted += result.inserted ?? 0;
         totalSkipped += result.skipped ?? 0;
+
+        const elapsed = Date.now() - startTime;
+        console.log(`[Writer] Batch ${i + 1}/${chunks.length} completed in ${elapsed}ms`);
       }
 
       return { inserted: totalInserted, skipped: totalSkipped };
@@ -203,7 +210,11 @@ export function createWriterClient(config: WriterClientConfig): WriterClient {
       const chunks = chunk(usage, chunkSizes.usage);
       let totalInserted = 0;
 
-      for (const batch of chunks) {
+      for (let i = 0; i < chunks.length; i++) {
+        const batch = chunks[i]!;
+        const startTime = Date.now();
+        console.log(`[Writer] Posting usage batch ${i + 1}/${chunks.length} (${batch.length} records)...`);
+
         const response = await fetchWithRetry(`${config.baseUrl}/api/usage?version=${version}`, {
           method: 'POST',
           headers: getHeaders(),
@@ -223,6 +234,9 @@ export function createWriterClient(config: WriterClientConfig): WriterClient {
 
         const result = (await response.json()) as WriterResponse;
         totalInserted += result.inserted ?? 0;
+
+        const elapsed = Date.now() - startTime;
+        console.log(`[Writer] Batch ${i + 1}/${chunks.length} completed in ${elapsed}ms`);
       }
 
       return { inserted: totalInserted };
@@ -232,7 +246,11 @@ export function createWriterClient(config: WriterClientConfig): WriterClient {
       const chunks = chunk(pairs, chunkSizes.pairs);
       let totalInserted = 0;
 
-      for (const batch of chunks) {
+      for (let i = 0; i < chunks.length; i++) {
+        const batch = chunks[i]!;
+        const startTime = Date.now();
+        console.log(`[Writer] Posting pairs batch ${i + 1}/${chunks.length} (${batch.length} records)...`);
+
         const response = await fetchWithRetry(`${config.baseUrl}/api/pairs?version=${version}`, {
           method: 'POST',
           headers: getHeaders(),
@@ -254,6 +272,9 @@ export function createWriterClient(config: WriterClientConfig): WriterClient {
 
         const result = (await response.json()) as WriterResponse;
         totalInserted += result.inserted ?? 0;
+
+        const elapsed = Date.now() - startTime;
+        console.log(`[Writer] Batch ${i + 1}/${chunks.length} completed in ${elapsed}ms`);
       }
 
       return { inserted: totalInserted };
