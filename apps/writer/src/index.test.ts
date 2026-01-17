@@ -8,9 +8,15 @@ async function runMigrations(db: D1Database) {
   // meta table (version management)
   await db.batch([
     db.prepare(`CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)`),
-    db.prepare(`CREATE TABLE IF NOT EXISTS items (id TEXT PRIMARY KEY, name TEXT NOT NULL, slot_id INTEGER NOT NULL CHECK (slot_id BETWEEN 1 AND 5))`),
-    db.prepare(`CREATE TABLE IF NOT EXISTS usage (version TEXT NOT NULL, slot_id INTEGER NOT NULL, item_id TEXT NOT NULL, usage_count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (version, slot_id, item_id))`),
-    db.prepare(`CREATE TABLE IF NOT EXISTS pairs (version TEXT NOT NULL, slot_pair TEXT NOT NULL CHECK (slot_pair IN ('head-body', 'body-hands', 'body-legs', 'legs-feet')), item_id_a TEXT NOT NULL, item_id_b TEXT NOT NULL, pair_count INTEGER NOT NULL DEFAULT 0, rank INTEGER NOT NULL CHECK (rank BETWEEN 1 AND 10), PRIMARY KEY (version, slot_pair, item_id_a, rank))`),
+    db.prepare(
+      `CREATE TABLE IF NOT EXISTS items (id TEXT PRIMARY KEY, name TEXT NOT NULL, slot_id INTEGER NOT NULL CHECK (slot_id BETWEEN 1 AND 5))`,
+    ),
+    db.prepare(
+      `CREATE TABLE IF NOT EXISTS usage (version TEXT NOT NULL, slot_id INTEGER NOT NULL, item_id TEXT NOT NULL, usage_count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (version, slot_id, item_id))`,
+    ),
+    db.prepare(
+      `CREATE TABLE IF NOT EXISTS pairs (version TEXT NOT NULL, base_slot_id INTEGER NOT NULL CHECK (base_slot_id BETWEEN 1 AND 5), partner_slot_id INTEGER NOT NULL CHECK (partner_slot_id BETWEEN 1 AND 5), base_item_id TEXT NOT NULL, partner_item_id TEXT NOT NULL, pair_count INTEGER NOT NULL DEFAULT 0, rank INTEGER NOT NULL CHECK (rank BETWEEN 1 AND 10), PRIMARY KEY (version, base_slot_id, partner_slot_id, base_item_id, rank))`,
+    ),
   ]);
 }
 
@@ -258,11 +264,11 @@ describe('POST /api/pairs', () => {
   beforeAll(async () => {
     await runMigrations(env.DB);
     // Insert items for foreign key constraint
-    await env.DB.exec(`INSERT OR IGNORE INTO items VALUES ('item-001', 'Test Head', 1)`);
-    await env.DB.exec(`INSERT OR IGNORE INTO items VALUES ('item-002', 'Test Body', 2)`);
+    await env.DB.prepare(`INSERT OR IGNORE INTO items VALUES ('item-001', 'Test Head', 1)`).run();
+    await env.DB.prepare(`INSERT OR IGNORE INTO items VALUES ('item-002', 'Test Body', 2)`).run();
   });
 
-  it('inserts pair data successfully', async () => {
+  it('inserts pair data successfully (bidirectional format)', async () => {
     const ctx = createExecutionContext();
     const response = await app.fetch(
       new Request('http://localhost/api/pairs?version=test-version-001', {
@@ -274,9 +280,10 @@ describe('POST /api/pairs', () => {
         body: JSON.stringify({
           pairs: [
             {
-              slotPair: 'head-body',
-              itemIdA: 'item-001',
-              itemIdB: 'item-002',
+              baseSlotId: 1,
+              partnerSlotId: 2,
+              baseItemId: 'item-001',
+              partnerItemId: 'item-002',
               pairCount: 50,
               rank: 1,
             },
@@ -306,9 +313,10 @@ describe('POST /api/pairs', () => {
         body: JSON.stringify({
           pairs: [
             {
-              slotPair: 'head-body',
-              itemIdA: 'item-001',
-              itemIdB: 'item-002',
+              baseSlotId: 1,
+              partnerSlotId: 2,
+              baseItemId: 'item-001',
+              partnerItemId: 'item-002',
               pairCount: 50,
               rank: 1,
             },
@@ -325,7 +333,7 @@ describe('POST /api/pairs', () => {
     expect(body.error).toContain('version');
   });
 
-  it('returns 400 for invalid slotPair', async () => {
+  it('returns 400 for invalid baseSlotId', async () => {
     const ctx = createExecutionContext();
     const response = await app.fetch(
       new Request('http://localhost/api/pairs?version=test-version-001', {
@@ -337,9 +345,10 @@ describe('POST /api/pairs', () => {
         body: JSON.stringify({
           pairs: [
             {
-              slotPair: 'head-feet',
-              itemIdA: 'item-001',
-              itemIdB: 'item-002',
+              baseSlotId: 99,
+              partnerSlotId: 2,
+              baseItemId: 'item-001',
+              partnerItemId: 'item-002',
               pairCount: 50,
               rank: 1,
             },
@@ -353,7 +362,39 @@ describe('POST /api/pairs', () => {
 
     expect(response.status).toBe(400);
     const body = await response.json();
-    expect(body.error).toContain('Invalid slotPair');
+    expect(body.error).toContain('baseSlotId');
+  });
+
+  it('returns 400 for invalid partnerSlotId', async () => {
+    const ctx = createExecutionContext();
+    const response = await app.fetch(
+      new Request('http://localhost/api/pairs?version=test-version-001', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${AUTH_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          pairs: [
+            {
+              baseSlotId: 1,
+              partnerSlotId: 0,
+              baseItemId: 'item-001',
+              partnerItemId: 'item-002',
+              pairCount: 50,
+              rank: 1,
+            },
+          ],
+        }),
+      }),
+      { ...env, AUTH_TOKEN },
+      ctx,
+    );
+    await waitOnExecutionContext(ctx);
+
+    expect(response.status).toBe(400);
+    const body = await response.json();
+    expect(body.error).toContain('partnerSlotId');
   });
 
   it('returns 400 for invalid rank', async () => {
@@ -368,9 +409,10 @@ describe('POST /api/pairs', () => {
         body: JSON.stringify({
           pairs: [
             {
-              slotPair: 'head-body',
-              itemIdA: 'item-001',
-              itemIdB: 'item-002',
+              baseSlotId: 1,
+              partnerSlotId: 2,
+              baseItemId: 'item-001',
+              partnerItemId: 'item-002',
               pairCount: 50,
               rank: 11,
             },

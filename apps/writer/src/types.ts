@@ -1,5 +1,3 @@
-import type { SlotPair } from '@mirapuri/shared';
-
 /**
  * Cloudflare Worker 環境変数
  */
@@ -49,14 +47,19 @@ export interface UsageResponse {
 }
 
 /**
- * POST /api/pairs リクエスト
+ * POST /api/pairs リクエスト（双方向対応）
  * Query: ?version=xxx (必須)
  */
 export interface PairsRequest {
   pairs: Array<{
-    slotPair: SlotPair;
-    itemIdA: string;
-    itemIdB: string;
+    /** 主語側スロット (1-5) */
+    baseSlotId: number;
+    /** 相方側スロット (1-5) */
+    partnerSlotId: number;
+    /** 主語アイテム */
+    baseItemId: string;
+    /** 相方アイテム */
+    partnerItemId: string;
     pairCount: number;
     rank: number;
   }>;

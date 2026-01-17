@@ -112,11 +112,13 @@ describe('VersionManager', () => {
       const mockSelect = vi.fn(() => ({ from: mockSelectFrom }));
 
       // distinct versions を取得（3件: current, prev, old）
-      const mockAll = vi.fn().mockResolvedValue([
-        { version: 'current-version' },
-        { version: 'prev-version' },
-        { version: 'old-version' },
-      ]);
+      const mockAll = vi
+        .fn()
+        .mockResolvedValue([
+          { version: 'current-version' },
+          { version: 'prev-version' },
+          { version: 'old-version' },
+        ]);
       const mockSelectDistinct = vi.fn(() => ({
         from: vi.fn(() => ({ all: mockAll })),
       }));
@@ -145,10 +147,9 @@ describe('VersionManager', () => {
       const mockSelect = vi.fn(() => ({ from: mockSelectFrom }));
 
       // distinct versions を取得（2件のみ: current, prev）
-      const mockAll = vi.fn().mockResolvedValue([
-        { version: 'current-version' },
-        { version: 'prev-version' },
-      ]);
+      const mockAll = vi
+        .fn()
+        .mockResolvedValue([{ version: 'current-version' }, { version: 'prev-version' }]);
       const mockSelectDistinct = vi.fn(() => ({
         from: vi.fn(() => ({ all: mockAll })),
       }));

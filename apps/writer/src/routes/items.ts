@@ -58,9 +58,7 @@ itemsRoute.post('/', async (c) => {
   if (batches.length === 0) {
     return c.json({ success: true, inserted: 0, skipped: 0 } satisfies ItemsResponse);
   }
-  const statements = batches.map((batch) =>
-    db.insert(items).values(batch).onConflictDoNothing(),
-  );
+  const statements = batches.map((batch) => db.insert(items).values(batch).onConflictDoNothing());
   const [first, ...rest] = statements;
   const results = await db.batch([first!, ...rest]);
   const totalInserted = results.reduce(

@@ -1,11 +1,4 @@
-import {
-  charactersGlamour,
-  crawlProgress,
-  itemsCache,
-  SLOT_PAIR_CONFIG,
-  SLOT_PAIRS,
-  type SlotPair,
-} from '@mirapuri/shared';
+import { charactersGlamour, crawlProgress, itemsCache } from '@mirapuri/shared';
 import type * as schema from '@mirapuri/shared/schema';
 import { count, notInArray, sql } from 'drizzle-orm';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
@@ -34,6 +27,17 @@ const EXCLUDED_ITEM_IDS = [
   'beefde6d41a', // エンペラーブリーチ
   'b48d9e2e0bb', // エンペラーブーツ
 ];
+
+/**
+ * 有効なスロットペアの組み合わせ
+ * 胴を中心とした4パターン
+ */
+const PAIR_SLOTS = [
+  { slotA: 1, slotB: 2 }, // head-body
+  { slotA: 2, slotB: 3 }, // body-hands
+  { slotA: 2, slotB: 4 }, // body-legs
+  { slotA: 4, slotB: 5 }, // legs-feet
+] as const;
 
 export interface AggregatorDependencies {
   db: PostgresJsDatabase<typeof schema>;
@@ -96,14 +100,13 @@ export function createAggregator(deps: AggregatorDependencies): Aggregator {
     },
 
     /**
-     * ペア組み合わせを集計（4パターン、各アイテム上位10件のみ）
+     * ペア組み合わせを双方向集計（4パターン × 2方向、各アイテム上位10件のみ）
      */
     async aggregatePairs(): Promise<AggregatedPair[]> {
       const allPairs: AggregatedPair[] = [];
 
-      for (const slotPair of SLOT_PAIRS) {
-        const config = SLOT_PAIR_CONFIG[slotPair];
-        const pairs = await aggregatePairForSlot(db, slotPair, config.slotA, config.slotB);
+      for (const { slotA, slotB } of PAIR_SLOTS) {
+        const pairs = await aggregateBidirectionalPairs(db, slotA, slotB);
         allPairs.push(...pairs);
       }
 
@@ -142,55 +145,63 @@ export function createAggregator(deps: AggregatorDependencies): Aggregator {
 }
 
 /**
- * 特定のスロットペアに対するペア集計
+ * 特定のスロットペアに対する双方向ペア集計
+ * A→B と B→A の両方向を生成し、各主語アイテムごとに TOP 10 をランク付け
  * プライバシー保護のため、3人以上の組み合わせのみ返す
  */
-async function aggregatePairForSlot(
+async function aggregateBidirectionalPairs(
   db: PostgresJsDatabase<typeof schema>,
-  slotPair: SlotPair,
-  slotIdA: number,
-  slotIdB: number,
+  slotA: number,
+  slotB: number,
 ): Promise<AggregatedPair[]> {
-  // 同一キャラクターの slotA と slotB の装備を結合してペアをカウント
-  // pair_count >= 3 でフィルタリング（プライバシー保護）
   const result = await db.execute(sql`
-    WITH pairs AS (
+    WITH base_pairs AS (
       SELECT
         a.item_id AS item_id_a,
         b.item_id AS item_id_b,
         COUNT(*) AS pair_count
       FROM characters_glamour a
       INNER JOIN characters_glamour b ON a.character_id = b.character_id
-      WHERE a.slot_id = ${slotIdA}
-        AND b.slot_id = ${slotIdB}
+      WHERE a.slot_id = ${slotA}
+        AND b.slot_id = ${slotB}
       GROUP BY a.item_id, b.item_id
       HAVING COUNT(*) >= ${MIN_COUNT_THRESHOLD}
     ),
+    directed AS (
+      SELECT item_id_a AS base_item_id, item_id_b AS partner_item_id,
+             ${slotA} AS base_slot_id, ${slotB} AS partner_slot_id, pair_count
+      FROM base_pairs
+      UNION ALL
+      SELECT item_id_b AS base_item_id, item_id_a AS partner_item_id,
+             ${slotB} AS base_slot_id, ${slotA} AS partner_slot_id, pair_count
+      FROM base_pairs
+    ),
     ranked AS (
-      SELECT
-        item_id_a,
-        item_id_b,
-        pair_count,
-        ROW_NUMBER() OVER (PARTITION BY item_id_a ORDER BY pair_count DESC) AS rank
-      FROM pairs
+      SELECT base_item_id, partner_item_id, base_slot_id, partner_slot_id, pair_count,
+             ROW_NUMBER() OVER (
+               PARTITION BY base_slot_id, partner_slot_id, base_item_id
+               ORDER BY pair_count DESC, partner_item_id ASC
+             ) AS rank
+      FROM directed
     )
-    SELECT item_id_a, item_id_b, pair_count, rank
-    FROM ranked
-    WHERE rank <= ${TOP_PAIRS_LIMIT}
-    ORDER BY item_id_a, rank
+    SELECT * FROM ranked WHERE rank <= ${TOP_PAIRS_LIMIT}
+    ORDER BY base_slot_id, partner_slot_id, base_item_id, rank
   `);
 
   return (
     result as unknown as Array<{
-      item_id_a: string;
-      item_id_b: string;
+      base_item_id: string;
+      partner_item_id: string;
+      base_slot_id: string;
+      partner_slot_id: string;
       pair_count: string;
       rank: string;
     }>
   ).map((row) => ({
-    slotPair,
-    itemIdA: row.item_id_a,
-    itemIdB: row.item_id_b,
+    baseSlotId: Number(row.base_slot_id),
+    partnerSlotId: Number(row.partner_slot_id),
+    baseItemId: row.base_item_id,
+    partnerItemId: row.partner_item_id,
     pairCount: Number(row.pair_count),
     rank: Number(row.rank),
   }));

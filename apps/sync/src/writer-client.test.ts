@@ -188,12 +188,26 @@ describe('WriterClient', () => {
   });
 
   describe('postPairs', () => {
-    it('正常にペアデータをPOSTする（version付き）', async () => {
+    it('正常にペアデータをPOSTする（version付き、双方向形式）', async () => {
       mockFetch.mockResolvedValue(createMockResponse(200, { inserted: 2 }));
 
       const pairs: AggregatedPair[] = [
-        { slotPair: 'head-body', itemIdA: 'item1', itemIdB: 'item2', pairCount: 10, rank: 1 },
-        { slotPair: 'body-hands', itemIdA: 'item3', itemIdB: 'item4', pairCount: 5, rank: 1 },
+        {
+          baseSlotId: 1,
+          partnerSlotId: 2,
+          baseItemId: 'item1',
+          partnerItemId: 'item2',
+          pairCount: 10,
+          rank: 1,
+        },
+        {
+          baseSlotId: 2,
+          partnerSlotId: 3,
+          baseItemId: 'item3',
+          partnerItemId: 'item4',
+          pairCount: 5,
+          rank: 1,
+        },
       ];
 
       const result = await client.postPairs('test-version', pairs);
@@ -205,15 +219,51 @@ describe('WriterClient', () => {
       );
     });
 
+    it('リクエストボディに双方向形式のフィールドが含まれる', async () => {
+      mockFetch.mockResolvedValue(createMockResponse(200, { inserted: 1 }));
+
+      const pairs: AggregatedPair[] = [
+        {
+          baseSlotId: 1,
+          partnerSlotId: 2,
+          baseItemId: 'head1',
+          partnerItemId: 'body1',
+          pairCount: 10,
+          rank: 1,
+        },
+      ];
+
+      await client.postPairs('test-version', pairs);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://api.example.com/api/pairs?version=test-version',
+        expect.objectContaining({
+          body: JSON.stringify({
+            pairs: [
+              {
+                baseSlotId: 1,
+                partnerSlotId: 2,
+                baseItemId: 'head1',
+                partnerItemId: 'body1',
+                pairCount: 10,
+                rank: 1,
+              },
+            ],
+          }),
+        }),
+      );
+    });
+
     it('1000件を超えるデータはチャンク分割される', async () => {
       mockFetch
         .mockResolvedValueOnce(createMockResponse(200, { inserted: 1000 }))
         .mockResolvedValueOnce(createMockResponse(200, { inserted: 200 }));
 
       const pairs: AggregatedPair[] = Array.from({ length: 1200 }, (_, i) => ({
-        slotPair: 'head-body' as const,
-        itemIdA: `itemA${i}`,
-        itemIdB: `itemB${i}`,
+        baseSlotId: 1,
+        partnerSlotId: 2,
+        baseItemId: `itemA${i}`,
+        partnerItemId: `itemB${i}`,
         pairCount: i,
         rank: (i % 10) + 1,
       }));

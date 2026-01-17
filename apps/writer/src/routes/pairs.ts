@@ -1,4 +1,3 @@
-import { SLOT_PAIRS, type SlotPair } from '@mirapuri/shared';
 import { pairs } from '@mirapuri/shared/d1-schema';
 import { drizzle } from 'drizzle-orm/d1';
 import { Hono } from 'hono';
@@ -6,8 +5,8 @@ import type { Env, PairsRequest, PairsResponse } from '../types.js';
 
 export const pairsRoute = new Hono<{ Bindings: Env }>();
 
-// D1 bind variable limit is 100, pairs has 6 columns
-const BATCH_SIZE = 16;
+// D1 bind variable limit is 100, pairs has 7 columns
+const BATCH_SIZE = 14;
 
 function chunk<T>(array: T[], size: number): T[][] {
   const chunks: T[][] = [];
@@ -25,7 +24,7 @@ function getChanges(result: unknown, fallback: number): number {
 
 /**
  * POST /api/pairs?version=xxx
- * ペアデータを一括 INSERT（バージョン付き）
+ * ペアデータを一括 INSERT（バージョン付き、双方向対応）
  */
 pairsRoute.post('/', async (c) => {
   const version = c.req.query('version');
@@ -41,14 +40,21 @@ pairsRoute.post('/', async (c) => {
   }
 
   for (const pair of body.pairs) {
-    if (!pair.slotPair || !SLOT_PAIRS.includes(pair.slotPair as SlotPair)) {
-      return c.json({ error: `Invalid slotPair. Must be one of: ${SLOT_PAIRS.join(', ')}` }, 400);
+    if (typeof pair.baseSlotId !== 'number' || pair.baseSlotId < 1 || pair.baseSlotId > 5) {
+      return c.json({ error: 'baseSlotId must be between 1 and 5' }, 400);
     }
-    if (!pair.itemIdA || typeof pair.itemIdA !== 'string') {
-      return c.json({ error: 'Each pair must have a string itemIdA' }, 400);
+    if (
+      typeof pair.partnerSlotId !== 'number' ||
+      pair.partnerSlotId < 1 ||
+      pair.partnerSlotId > 5
+    ) {
+      return c.json({ error: 'partnerSlotId must be between 1 and 5' }, 400);
     }
-    if (!pair.itemIdB || typeof pair.itemIdB !== 'string') {
-      return c.json({ error: 'Each pair must have a string itemIdB' }, 400);
+    if (!pair.baseItemId || typeof pair.baseItemId !== 'string') {
+      return c.json({ error: 'Each pair must have a string baseItemId' }, 400);
+    }
+    if (!pair.partnerItemId || typeof pair.partnerItemId !== 'string') {
+      return c.json({ error: 'Each pair must have a string partnerItemId' }, 400);
     }
     if (typeof pair.pairCount !== 'number' || pair.pairCount < 0) {
       return c.json({ error: 'Each pair must have a non-negative pairCount' }, 400);
@@ -62,9 +68,10 @@ pairsRoute.post('/', async (c) => {
 
   const values = body.pairs.map((pair) => ({
     version,
-    slotPair: pair.slotPair,
-    itemIdA: pair.itemIdA,
-    itemIdB: pair.itemIdB,
+    baseSlotId: pair.baseSlotId,
+    partnerSlotId: pair.partnerSlotId,
+    baseItemId: pair.baseItemId,
+    partnerItemId: pair.partnerItemId,
     pairCount: pair.pairCount,
     rank: pair.rank,
   }));

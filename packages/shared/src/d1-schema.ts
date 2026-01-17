@@ -70,28 +70,38 @@ export type Usage = typeof usage.$inferSelect;
 export type NewUsage = typeof usage.$inferInsert;
 
 /**
- * ペア組み合わせテーブル
+ * ペア組み合わせテーブル（双方向対応）
  * 各アイテムの組み合わせ上位10件を保存（バージョン管理対象）
+ * base_item_id を主語として、partner_item_id との組み合わせを保存
  */
 export const pairs = sqliteTable(
   'pairs',
   {
     /** バージョン識別子 */
     version: text('version').notNull(),
-    /** ペア種類（'head-body', 'body-hands', 'body-legs', 'legs-feet'） */
-    slotPair: text('slot_pair').notNull(),
-    /** アイテムA（小さい slot_id 側） */
-    itemIdA: text('item_id_a').notNull(),
-    /** アイテムB（大きい slot_id 側） */
-    itemIdB: text('item_id_b').notNull(),
+    /** 主語側スロット (1:head, 2:body, 3:hands, 4:legs, 5:feet) */
+    baseSlotId: integer('base_slot_id').notNull(),
+    /** 相方側スロット (1:head, 2:body, 3:hands, 4:legs, 5:feet) */
+    partnerSlotId: integer('partner_slot_id').notNull(),
+    /** 主語アイテム */
+    baseItemId: text('base_item_id').notNull(),
+    /** 相方アイテム */
+    partnerItemId: text('partner_item_id').notNull(),
     /** ペア出現回数 */
     pairCount: integer('pair_count').notNull(),
     /** ランク（1-10） */
     rank: integer('rank').notNull(),
   },
   (table) => [
-    primaryKey({ columns: [table.version, table.slotPair, table.itemIdA, table.rank] }),
-    index('idx_pairs_version_pair_a').on(table.version, table.slotPair, table.itemIdA),
+    primaryKey({
+      columns: [table.version, table.baseSlotId, table.partnerSlotId, table.baseItemId, table.rank],
+    }),
+    index('idx_pairs_lookup').on(
+      table.version,
+      table.baseSlotId,
+      table.partnerSlotId,
+      table.baseItemId,
+    ),
   ],
 );
 

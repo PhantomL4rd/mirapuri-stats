@@ -1,6 +1,6 @@
+import { meta, pairs, usage } from '@mirapuri/shared/d1-schema';
 import { eq, notInArray } from 'drizzle-orm';
 import type { DrizzleD1Database } from 'drizzle-orm/d1';
-import { meta, pairs, usage } from '@mirapuri/shared/d1-schema';
 
 const ACTIVE_VERSION_KEY = 'active_version';
 const DEFAULT_VERSION = '0';
@@ -67,17 +67,12 @@ export function createVersionManager(deps: VersionManagerDependencies): VersionM
       const activeVersion = await this.getActiveVersion();
 
       // 全バージョンを取得
-      const usageVersions = await db
-        .selectDistinct({ version: usage.version })
-        .from(usage)
-        .all();
+      const usageVersions = await db.selectDistinct({ version: usage.version }).from(usage).all();
 
       const allVersions = [...new Set(usageVersions.map((v) => v.version))];
 
       // 保持するバージョン: active + previous
-      const versionsToKeep = [activeVersion, previousVersion].filter(
-        (v) => v !== DEFAULT_VERSION,
-      );
+      const versionsToKeep = [activeVersion, previousVersion].filter((v) => v !== DEFAULT_VERSION);
 
       // 削除対象: 保持対象以外
       const versionsToDelete = allVersions.filter((v) => !versionsToKeep.includes(v));

@@ -1,5 +1,3 @@
-import type { SlotPair } from '@mirapuri/shared';
-
 /**
  * CLI オプション
  */
@@ -49,12 +47,17 @@ export interface AggregatedUsage {
 }
 
 /**
- * 集計されたペア組み合わせ
+ * 集計されたペア組み合わせ（双方向対応）
  */
 export interface AggregatedPair {
-  slotPair: SlotPair;
-  itemIdA: string;
-  itemIdB: string;
+  /** 主語側スロット (1-5) */
+  baseSlotId: number;
+  /** 相方側スロット (1-5) */
+  partnerSlotId: number;
+  /** 主語アイテム */
+  baseItemId: string;
+  /** 相方アイテム */
+  partnerItemId: string;
   pairCount: number;
   rank: number;
 }

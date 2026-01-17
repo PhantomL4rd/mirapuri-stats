@@ -103,34 +103,114 @@ describe('Aggregator', () => {
         execute: mockExecute,
       }) as unknown as AggregatorDependencies['db'];
 
-    it('4パターンのペアを集計する', async () => {
+    it('4パターンの双方向ペアを集計する', async () => {
+      // 各スロットペアで双方向のデータを返す
       const mockExecute = vi
         .fn()
         .mockResolvedValueOnce([
-          { item_id_a: 'head1', item_id_b: 'body1', pair_count: '10', rank: '1' },
+          // head-body: head→body と body→head
+          {
+            base_slot_id: '1',
+            partner_slot_id: '2',
+            base_item_id: 'head1',
+            partner_item_id: 'body1',
+            pair_count: '10',
+            rank: '1',
+          },
+          {
+            base_slot_id: '2',
+            partner_slot_id: '1',
+            base_item_id: 'body1',
+            partner_item_id: 'head1',
+            pair_count: '10',
+            rank: '1',
+          },
         ])
         .mockResolvedValueOnce([
-          { item_id_a: 'body1', item_id_b: 'hands1', pair_count: '8', rank: '1' },
+          // body-hands
+          {
+            base_slot_id: '2',
+            partner_slot_id: '3',
+            base_item_id: 'body1',
+            partner_item_id: 'hands1',
+            pair_count: '8',
+            rank: '1',
+          },
+          {
+            base_slot_id: '3',
+            partner_slot_id: '2',
+            base_item_id: 'hands1',
+            partner_item_id: 'body1',
+            pair_count: '8',
+            rank: '1',
+          },
         ])
         .mockResolvedValueOnce([
-          { item_id_a: 'body1', item_id_b: 'legs1', pair_count: '6', rank: '1' },
+          // body-legs
+          {
+            base_slot_id: '2',
+            partner_slot_id: '4',
+            base_item_id: 'body1',
+            partner_item_id: 'legs1',
+            pair_count: '6',
+            rank: '1',
+          },
+          {
+            base_slot_id: '4',
+            partner_slot_id: '2',
+            base_item_id: 'legs1',
+            partner_item_id: 'body1',
+            pair_count: '6',
+            rank: '1',
+          },
         ])
         .mockResolvedValueOnce([
-          { item_id_a: 'legs1', item_id_b: 'feet1', pair_count: '4', rank: '1' },
+          // legs-feet
+          {
+            base_slot_id: '4',
+            partner_slot_id: '5',
+            base_item_id: 'legs1',
+            partner_item_id: 'feet1',
+            pair_count: '4',
+            rank: '1',
+          },
+          {
+            base_slot_id: '5',
+            partner_slot_id: '4',
+            base_item_id: 'feet1',
+            partner_item_id: 'legs1',
+            pair_count: '4',
+            rank: '1',
+          },
         ]);
       const mockDb = createPairsMockDb(mockExecute);
 
       const aggregator = createAggregator({ db: mockDb });
       const result = await aggregator.aggregatePairs();
 
-      expect(result).toHaveLength(4);
-      expect(result[0]!.slotPair).toBe('head-body');
-      expect(result[1]!.slotPair).toBe('body-hands');
-      expect(result[2]!.slotPair).toBe('body-legs');
-      expect(result[3]!.slotPair).toBe('legs-feet');
+      // 4ペア × 2方向 = 8件
+      expect(result).toHaveLength(8);
+      // head→body
+      expect(result[0]).toEqual({
+        baseSlotId: 1,
+        partnerSlotId: 2,
+        baseItemId: 'head1',
+        partnerItemId: 'body1',
+        pairCount: 10,
+        rank: 1,
+      });
+      // body→head
+      expect(result[1]).toEqual({
+        baseSlotId: 2,
+        partnerSlotId: 1,
+        baseItemId: 'body1',
+        partnerItemId: 'head1',
+        pairCount: 10,
+        rank: 1,
+      });
     });
 
-    it('各slotPairに対してSQLが実行される', async () => {
+    it('各slotPairに対してSQLが実行される（4回）', async () => {
       const mockExecute = vi.fn().mockResolvedValue([]);
       const mockDb = createPairsMockDb(mockExecute);
 
@@ -140,19 +220,28 @@ describe('Aggregator', () => {
       expect(mockExecute).toHaveBeenCalledTimes(4);
     });
 
-    it('pairCountとrankを数値に変換する', async () => {
-      const mockExecute = vi
-        .fn()
-        .mockResolvedValue([
-          { item_id_a: 'item1', item_id_b: 'item2', pair_count: '100', rank: '1' },
-        ]);
+    it('pairCount, rank, slotIdを数値に変換する', async () => {
+      const mockExecute = vi.fn().mockResolvedValue([
+        {
+          base_slot_id: '1',
+          partner_slot_id: '2',
+          base_item_id: 'item1',
+          partner_item_id: 'item2',
+          pair_count: '100',
+          rank: '1',
+        },
+      ]);
       const mockDb = createPairsMockDb(mockExecute);
 
       const aggregator = createAggregator({ db: mockDb });
       const result = await aggregator.aggregatePairs();
 
+      expect(result[0]!.baseSlotId).toBe(1);
+      expect(result[0]!.partnerSlotId).toBe(2);
       expect(result[0]!.pairCount).toBe(100);
       expect(result[0]!.rank).toBe(1);
+      expect(typeof result[0]!.baseSlotId).toBe('number');
+      expect(typeof result[0]!.partnerSlotId).toBe('number');
       expect(typeof result[0]!.pairCount).toBe('number');
       expect(typeof result[0]!.rank).toBe('number');
     });
@@ -167,18 +256,28 @@ describe('Aggregator', () => {
       expect(result).toEqual([]);
     });
 
-    it('TOP10のペアが含まれる', async () => {
-      // head-bodyのペア10件
-      const headBodyPairs = Array.from({ length: 10 }, (_, i) => ({
-        item_id_a: 'head1',
-        item_id_b: `body${i + 1}`,
+    it('各方向で TOP10 のペアが含まれる', async () => {
+      // head-bodyの双方向ペア
+      const headToBody = Array.from({ length: 10 }, (_, i) => ({
+        base_slot_id: '1',
+        partner_slot_id: '2',
+        base_item_id: 'head1',
+        partner_item_id: `body${i + 1}`,
+        pair_count: String(100 - i * 10),
+        rank: String(i + 1),
+      }));
+      const bodyToHead = Array.from({ length: 10 }, (_, i) => ({
+        base_slot_id: '2',
+        partner_slot_id: '1',
+        base_item_id: 'body1',
+        partner_item_id: `head${i + 1}`,
         pair_count: String(100 - i * 10),
         rank: String(i + 1),
       }));
 
       const mockExecute = vi
         .fn()
-        .mockResolvedValueOnce(headBodyPairs)
+        .mockResolvedValueOnce([...headToBody, ...bodyToHead])
         .mockResolvedValueOnce([])
         .mockResolvedValueOnce([])
         .mockResolvedValueOnce([]);
@@ -187,10 +286,15 @@ describe('Aggregator', () => {
       const aggregator = createAggregator({ db: mockDb });
       const result = await aggregator.aggregatePairs();
 
-      const headBodyResults = result.filter((r) => r.slotPair === 'head-body');
-      expect(headBodyResults).toHaveLength(10);
-      expect(headBodyResults[0]!.rank).toBe(1);
-      expect(headBodyResults[9]!.rank).toBe(10);
+      // head→body が 10件
+      const headToBodyResults = result.filter((r) => r.baseSlotId === 1 && r.partnerSlotId === 2);
+      expect(headToBodyResults).toHaveLength(10);
+      expect(headToBodyResults[0]!.rank).toBe(1);
+      expect(headToBodyResults[9]!.rank).toBe(10);
+
+      // body→head が 10件
+      const bodyToHeadResults = result.filter((r) => r.baseSlotId === 2 && r.partnerSlotId === 1);
+      expect(bodyToHeadResults).toHaveLength(10);
     });
   });
 

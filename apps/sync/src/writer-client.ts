@@ -176,7 +176,9 @@ export function createWriterClient(config: WriterClientConfig): WriterClient {
       for (let i = 0; i < chunks.length; i++) {
         const batch = chunks[i]!;
         const startTime = Date.now();
-        console.log(`[Writer] Posting items batch ${i + 1}/${chunks.length} (${batch.length} items)...`);
+        console.log(
+          `[Writer] Posting items batch ${i + 1}/${chunks.length} (${batch.length} items)...`,
+        );
 
         const response = await fetchWithRetry(`${config.baseUrl}/api/items`, {
           method: 'POST',
@@ -213,7 +215,9 @@ export function createWriterClient(config: WriterClientConfig): WriterClient {
       for (let i = 0; i < chunks.length; i++) {
         const batch = chunks[i]!;
         const startTime = Date.now();
-        console.log(`[Writer] Posting usage batch ${i + 1}/${chunks.length} (${batch.length} records)...`);
+        console.log(
+          `[Writer] Posting usage batch ${i + 1}/${chunks.length} (${batch.length} records)...`,
+        );
 
         const response = await fetchWithRetry(`${config.baseUrl}/api/usage?version=${version}`, {
           method: 'POST',
@@ -249,16 +253,19 @@ export function createWriterClient(config: WriterClientConfig): WriterClient {
       for (let i = 0; i < chunks.length; i++) {
         const batch = chunks[i]!;
         const startTime = Date.now();
-        console.log(`[Writer] Posting pairs batch ${i + 1}/${chunks.length} (${batch.length} records)...`);
+        console.log(
+          `[Writer] Posting pairs batch ${i + 1}/${chunks.length} (${batch.length} records)...`,
+        );
 
         const response = await fetchWithRetry(`${config.baseUrl}/api/pairs?version=${version}`, {
           method: 'POST',
           headers: getHeaders(),
           body: JSON.stringify({
             pairs: batch.map((item) => ({
-              slotPair: item.slotPair,
-              itemIdA: item.itemIdA,
-              itemIdB: item.itemIdB,
+              baseSlotId: item.baseSlotId,
+              partnerSlotId: item.partnerSlotId,
+              baseItemId: item.baseItemId,
+              partnerItemId: item.partnerItemId,
               pairCount: item.pairCount,
               rank: item.rank,
             })),

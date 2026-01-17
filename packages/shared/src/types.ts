@@ -83,30 +83,3 @@ export interface RepositoryResult {
   /** エラーメッセージ */
   error?: string;
 }
-
-/**
- * ペア組み合わせの種類
- * 胴を中心とした4パターンのみ
- */
-export type SlotPair = 'head-body' | 'body-hands' | 'body-legs' | 'legs-feet';
-
-/**
- * 有効な SlotPair 値の配列
- */
-export const SLOT_PAIRS: readonly SlotPair[] = [
-  'head-body',
-  'body-hands',
-  'body-legs',
-  'legs-feet',
-] as const;
-
-/**
- * SlotPair ごとの slot_id マッピング
- * item_id_a は常に小さい slot_id を持つ側
- */
-export const SLOT_PAIR_CONFIG: Record<SlotPair, { slotA: number; slotB: number }> = {
-  'head-body': { slotA: 1, slotB: 2 }, // head=1, body=2
-  'body-hands': { slotA: 2, slotB: 3 }, // body=2, hands=3
-  'body-legs': { slotA: 2, slotB: 4 }, // body=2, legs=4
-  'legs-feet': { slotA: 4, slotB: 5 }, // legs=4, feet=5
-} as const;
