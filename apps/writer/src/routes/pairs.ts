@@ -69,14 +69,18 @@ pairsRoute.post('/', async (c) => {
     rank: pair.rank,
   }));
 
-  // SQLite制限回避のためバッチ分割してINSERT
+  // D1制限回避のためバッチ分割し、db.batch()で一括実行
   const batches = chunk(values, BATCH_SIZE);
-  let totalInserted = 0;
-
-  for (const batch of batches) {
-    const result = await db.insert(pairs).values(batch);
-    totalInserted += getChanges(result, batch.length);
+  if (batches.length === 0) {
+    return c.json({ success: true, inserted: 0 } satisfies PairsResponse);
   }
+  const statements = batches.map((batch) => db.insert(pairs).values(batch));
+  const [first, ...rest] = statements;
+  const results = await db.batch([first!, ...rest]);
+  const totalInserted = results.reduce(
+    (sum, result, i) => sum + getChanges(result, batches[i]!.length),
+    0,
+  );
 
   const response: PairsResponse = {
     success: true,

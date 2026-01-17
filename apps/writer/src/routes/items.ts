@@ -53,14 +53,20 @@ itemsRoute.post('/', async (c) => {
     slotId: item.slotId,
   }));
 
-  // SQLite制限回避のためバッチ分割してINSERT
+  // D1制限回避のためバッチ分割し、db.batch()で一括実行
   const batches = chunk(values, BATCH_SIZE);
-  let totalInserted = 0;
-
-  for (const batch of batches) {
-    const result = await db.insert(items).values(batch).onConflictDoNothing();
-    totalInserted += getChanges(result, batch.length);
+  if (batches.length === 0) {
+    return c.json({ success: true, inserted: 0, skipped: 0 } satisfies ItemsResponse);
   }
+  const statements = batches.map((batch) =>
+    db.insert(items).values(batch).onConflictDoNothing(),
+  );
+  const [first, ...rest] = statements;
+  const results = await db.batch([first!, ...rest]);
+  const totalInserted = results.reduce(
+    (sum, result, i) => sum + getChanges(result, batches[i]!.length),
+    0,
+  );
 
   const response: ItemsResponse = {
     success: true,
