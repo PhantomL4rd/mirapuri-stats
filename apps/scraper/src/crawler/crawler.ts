@@ -190,6 +190,16 @@ export function createCrawler(config: CrawlerConfig, deps: CrawlerDependencies):
         `[Crawler] Final stats: Keys=${stats.processedKeys}/${stats.totalKeys}, Characters=${stats.processedCharacters}, Skipped=${stats.skippedCharacters}, Errors=${stats.errors}`,
       );
 
+      // 終了理由を含めて最終進捗を保存
+      await saveProgress(db, {
+        crawlerName,
+        lastCompletedShuffledIndex: stats.processedKeys > 0 ? stats.processedKeys - 1 : -1,
+        totalKeys: stats.totalKeys,
+        processedCharacters: stats.processedCharacters,
+        seed,
+        exitReason: stats.exitReason,
+      });
+
       return stats;
     },
 

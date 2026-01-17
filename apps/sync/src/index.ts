@@ -1,9 +1,5 @@
-import dns from 'node:dns';
 import 'dotenv/config';
 import { createDb } from '@mirapuri/shared';
-
-// Force IPv4 for DNS resolution (GitHub Actions doesn't support IPv6)
-dns.setDefaultResultOrder('ipv4first');
 import { Command } from 'commander';
 import { createAggregator } from './aggregator.js';
 import { formatProgress, runSync } from './sync-runner.js';

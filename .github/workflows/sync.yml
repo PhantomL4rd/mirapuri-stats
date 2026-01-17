@@ -32,7 +32,6 @@ jobs:
 
       - name: Run sync
         env:
-          NODE_OPTIONS: '--dns-result-order=ipv4first'
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           WORKER_URL: ${{ secrets.WORKER_URL }}
           WORKER_AUTH_TOKEN: ${{ secrets.WORKER_AUTH_TOKEN }}

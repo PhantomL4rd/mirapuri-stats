@@ -68,6 +68,8 @@ export const crawlProgress = pgTable('crawl_progress', {
     totalKeys: number;
     processedCharacters: number;
     seed: number;
+    /** 終了理由（COMPLETED: 全キー完了, LIMIT_REACHED: 上限到達で終了） */
+    exitReason?: 'COMPLETED' | 'LIMIT_REACHED';
   }>(),
   /** 更新日時 */
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

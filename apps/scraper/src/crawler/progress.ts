@@ -2,6 +2,9 @@ import type { Database } from '@mirapuri/shared/db';
 import { crawlProgress } from '@mirapuri/shared/schema';
 import { eq } from 'drizzle-orm';
 
+/** 終了理由 */
+export type ExitReason = 'COMPLETED' | 'LIMIT_REACHED';
+
 /**
  * 進捗データ
  */
@@ -17,6 +20,8 @@ export interface ProgressData {
   updatedAt: string;
   /** シャッフル用シード値 */
   seed: number;
+  /** 終了理由（未設定の場合は進行中） */
+  exitReason?: ExitReason;
 }
 
 /**
@@ -32,6 +37,8 @@ export interface ProgressSaveData {
   processedCharacters: number;
   /** シャッフル用シード値 */
   seed: number;
+  /** 終了理由（クロール終了時のみ設定） */
+  exitReason?: ExitReason;
 }
 
 /**
@@ -59,6 +66,7 @@ export async function loadProgress(
     processedCharacters: row.progress.processedCharacters,
     updatedAt: row.updatedAt.toISOString(),
     seed: row.progress.seed,
+    ...(row.progress.exitReason && { exitReason: row.progress.exitReason }),
   };
 }
 
@@ -71,6 +79,7 @@ export async function saveProgress(db: Database, data: ProgressSaveData): Promis
     totalKeys: data.totalKeys,
     processedCharacters: data.processedCharacters,
     seed: data.seed,
+    ...(data.exitReason && { exitReason: data.exitReason }),
   };
 
   await db

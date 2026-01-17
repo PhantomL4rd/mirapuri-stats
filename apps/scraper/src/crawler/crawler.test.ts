@@ -119,8 +119,8 @@ describe('crawler', () => {
       // 位置0（index:5000）は呼ばれない（旧バグでは元の連番で判定していたため失敗していた）
       expect(deps.listFetcher.fetchAllCharacterIds).not.toHaveBeenCalledWith(shuffledKeys[0]);
 
-      // 進捗保存はシャッフル後の配列位置（1と2）で行われる
-      expect(mockSaveProgress).toHaveBeenCalledTimes(2);
+      // 進捗保存はシャッフル後の配列位置（1と2）+ 最終保存（exitReason付き）
+      expect(mockSaveProgress).toHaveBeenCalledTimes(3);
       expect(mockSaveProgress).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ lastCompletedShuffledIndex: 1 }),
@@ -128,6 +128,11 @@ describe('crawler', () => {
       expect(mockSaveProgress).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ lastCompletedShuffledIndex: 2 }),
+      );
+      // 最終保存はexitReasonを含む
+      expect(mockSaveProgress).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ exitReason: 'COMPLETED' }),
       );
     });
 
@@ -157,7 +162,8 @@ describe('crawler', () => {
 
       await crawler.start();
 
-      expect(mockSaveProgress).toHaveBeenCalledTimes(2);
+      // 2キー分 + 最終保存（exitReason付き）
+      expect(mockSaveProgress).toHaveBeenCalledTimes(3);
     });
 
     it('スクレイプエラーをカウントする', async () => {

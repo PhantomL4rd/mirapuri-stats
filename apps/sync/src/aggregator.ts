@@ -98,8 +98,8 @@ export function createAggregator(deps: AggregatorDependencies): Aggregator {
     },
 
     /**
-     * scraper が全完了しているか確認
-     * crawl_progress の lastCompletedShuffledIndex が totalKeys - 1 以上なら完了
+     * scraper が同期可能な状態か確認
+     * exitReason が設定されていれば完了（COMPLETED または LIMIT_REACHED）
      */
     async isCrawlComplete(): Promise<boolean> {
       const result = await db.select().from(crawlProgress).limit(1);
@@ -110,7 +110,8 @@ export function createAggregator(deps: AggregatorDependencies): Aggregator {
       }
 
       const progress = result[0]!.progress;
-      return progress.lastCompletedShuffledIndex >= progress.totalKeys - 1;
+      // exitReason が設定されていれば同期可能
+      return progress.exitReason === 'COMPLETED' || progress.exitReason === 'LIMIT_REACHED';
     },
 
     /**

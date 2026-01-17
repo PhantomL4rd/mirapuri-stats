@@ -194,7 +194,7 @@ describe('Aggregator', () => {
   });
 
   describe('isCrawlComplete', () => {
-    it('進捗が完了していればtrueを返す', async () => {
+    it('exitReasonがCOMPLETEDならtrueを返す', async () => {
       const mockSelect = vi.fn(() => ({
         from: vi.fn(() => ({
           limit: vi.fn().mockResolvedValue([
@@ -204,6 +204,7 @@ describe('Aggregator', () => {
                 totalKeys: 100,
                 processedCharacters: 1000,
                 seed: 42,
+                exitReason: 'COMPLETED',
               },
             },
           ]),
@@ -217,7 +218,31 @@ describe('Aggregator', () => {
       expect(result).toBe(true);
     });
 
-    it('進捗が未完了ならfalseを返す', async () => {
+    it('exitReasonがLIMIT_REACHEDならtrueを返す', async () => {
+      const mockSelect = vi.fn(() => ({
+        from: vi.fn(() => ({
+          limit: vi.fn().mockResolvedValue([
+            {
+              progress: {
+                lastCompletedShuffledIndex: 50,
+                totalKeys: 100,
+                processedCharacters: 5000,
+                seed: 42,
+                exitReason: 'LIMIT_REACHED',
+              },
+            },
+          ]),
+        })),
+      }));
+      const mockDb = { select: mockSelect } as unknown as AggregatorDependencies['db'];
+
+      const aggregator = createAggregator({ db: mockDb });
+      const result = await aggregator.isCrawlComplete();
+
+      expect(result).toBe(true);
+    });
+
+    it('exitReasonが未設定なら進行中としてfalseを返す', async () => {
       const mockSelect = vi.fn(() => ({
         from: vi.fn(() => ({
           limit: vi.fn().mockResolvedValue([
