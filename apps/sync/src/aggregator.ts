@@ -7,7 +7,7 @@ import {
   type SlotPair,
 } from '@mirapuri/shared';
 import type * as schema from '@mirapuri/shared/schema';
-import { count, sql } from 'drizzle-orm';
+import { count, notInArray, sql } from 'drizzle-orm';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import type { AggregatedPair, AggregatedUsage, ExtractedItem } from './types.js';
 
@@ -22,6 +22,18 @@ const MIN_COUNT_THRESHOLD = 3;
  * 各アイテムに対して、組み合わせ相手の上位N件を保存
  */
 const TOP_PAIRS_LIMIT = 10;
+
+/**
+ * Usage集計から除外するアイテムID
+ * エンペラー装備：透明装備のため統計から除外
+ */
+const EXCLUDED_ITEM_IDS = [
+  '861a1ed2fa2', // エンペラーハット
+  'f07e64641c4', // エンペラーローブ
+  '97254b85b86', // エンペラーグローブ
+  'beefde6d41a', // エンペラーブリーチ
+  'b48d9e2e0bb', // エンペラーブーツ
+];
 
 export interface AggregatorDependencies {
   db: PostgresJsDatabase<typeof schema>;
@@ -72,6 +84,7 @@ export function createAggregator(deps: AggregatorDependencies): Aggregator {
           usageCount: count(),
         })
         .from(charactersGlamour)
+        .where(notInArray(charactersGlamour.itemId, EXCLUDED_ITEM_IDS))
         .groupBy(charactersGlamour.slotId, charactersGlamour.itemId)
         .having(sql`count(*) >= ${MIN_COUNT_THRESHOLD}`);
 
@@ -117,11 +130,13 @@ export function createAggregator(deps: AggregatorDependencies): Aggregator {
     /**
      * Supabase のデータをクリーンアップ
      * characters_glamour, items_cache, crawl_progress を削除
+     * 集計処理が完成するまで無効化
      */
     async cleanup(): Promise<void> {
-      await db.delete(charactersGlamour);
-      await db.delete(itemsCache);
-      await db.delete(crawlProgress);
+      console.log('[cleanup] Skipped');
+      // await db.delete(charactersGlamour);
+      // await db.delete(itemsCache);
+      // await db.delete(crawlProgress);
     },
   };
 }
