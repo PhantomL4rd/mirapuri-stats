@@ -28,6 +28,10 @@ describe('runSync', () => {
           { slotPair: 'head-body', itemIdA: 'item1', itemIdB: 'item2', pairCount: 10, rank: 1 },
         ]),
       isCrawlComplete: vi.fn().mockResolvedValue(true),
+      getDataDateRange: vi.fn().mockResolvedValue({
+        dataFrom: new Date('2025-01-01T00:00:00Z'),
+        dataTo: new Date('2025-01-18T12:00:00Z'),
+      }),
       cleanup: vi.fn().mockResolvedValue(undefined),
     };
 
@@ -65,7 +69,10 @@ describe('runSync', () => {
       expect(mockAggregator.aggregatePairs).toHaveBeenCalled();
       expect(mockClient.postUsage).toHaveBeenCalledWith('test-version-123', expect.any(Array));
       expect(mockClient.postPairs).toHaveBeenCalledWith('test-version-123', expect.any(Array));
-      expect(mockClient.commitSync).toHaveBeenCalledWith('test-version-123');
+      expect(mockClient.commitSync).toHaveBeenCalledWith('test-version-123', {
+        dataFrom: new Date('2025-01-01T00:00:00Z'),
+        dataTo: new Date('2025-01-18T12:00:00Z'),
+      });
 
       expect(result.itemsInserted).toBe(2);
       expect(result.itemsSkipped).toBe(0);
@@ -118,7 +125,10 @@ describe('runSync', () => {
       expect(mockAggregator.aggregatePairs).toHaveBeenCalled();
       expect(mockClient.postUsage).toHaveBeenCalledWith('test-version-123', expect.any(Array));
       expect(mockClient.postPairs).toHaveBeenCalledWith('test-version-123', expect.any(Array));
-      expect(mockClient.commitSync).toHaveBeenCalledWith('test-version-123');
+      expect(mockClient.commitSync).toHaveBeenCalledWith('test-version-123', {
+        dataFrom: new Date('2025-01-01T00:00:00Z'),
+        dataTo: new Date('2025-01-18T12:00:00Z'),
+      });
 
       expect(result.itemsInserted).toBe(0);
       expect(result.usageInserted).toBe(2);

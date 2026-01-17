@@ -86,6 +86,10 @@ export interface SyncStartResponse {
  */
 export interface SyncCommitRequest {
   version: string;
+  /** データ取得期間（最も古い fetched_at）ISO8601 */
+  dataFrom?: string;
+  /** データ取得期間（最も新しい fetched_at）ISO8601 */
+  dataTo?: string;
 }
 
 /**

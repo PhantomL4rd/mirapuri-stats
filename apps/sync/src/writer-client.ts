@@ -31,11 +31,18 @@ const DEFAULT_RETRY_COUNT = 3;
  */
 const DEFAULT_RETRY_DELAY_MS = 1000;
 
+export interface CommitSyncOptions {
+  /** データ取得期間（最も古い fetched_at）*/
+  dataFrom?: Date | undefined;
+  /** データ取得期間（最も新しい fetched_at）*/
+  dataTo?: Date | undefined;
+}
+
 export interface WriterClient {
   /** sync セッション開始、新バージョンを返す */
   startSync(): Promise<{ version: string }>;
   /** sync コミット、active_version を切り替え */
-  commitSync(version: string): Promise<void>;
+  commitSync(version: string, options?: CommitSyncOptions): Promise<void>;
   /** sync 中断、部分データを削除 */
   abortSync(version: string): Promise<void>;
   /** items 送信（バージョンなし、UPSERT） */
@@ -142,11 +149,19 @@ export function createWriterClient(config: WriterClientConfig): WriterClient {
       return { version: result.version };
     },
 
-    async commitSync(version: string): Promise<void> {
+    async commitSync(version: string, options?: CommitSyncOptions): Promise<void> {
+      const body: Record<string, string> = { version };
+      if (options?.dataFrom) {
+        body['dataFrom'] = options.dataFrom.toISOString();
+      }
+      if (options?.dataTo) {
+        body['dataTo'] = options.dataTo.toISOString();
+      }
+
       const response = await fetchWithRetry(`${config.baseUrl}/api/sync/commit`, {
         method: 'POST',
         headers: getHeaders(),
-        body: JSON.stringify({ version }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {

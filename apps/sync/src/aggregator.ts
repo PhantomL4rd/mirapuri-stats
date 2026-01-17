@@ -43,12 +43,21 @@ export interface AggregatorDependencies {
   db: PostgresJsDatabase<typeof schema>;
 }
 
+export interface DataDateRange {
+  /** 最も古いデータの取得日時 */
+  dataFrom: Date | null;
+  /** 最も新しいデータの取得日時 */
+  dataTo: Date | null;
+}
+
 export interface Aggregator {
   extractUniqueItems(): Promise<ExtractedItem[]>;
   aggregateUsage(): Promise<AggregatedUsage[]>;
   aggregatePairs(): Promise<AggregatedPair[]>;
   /** scraper が全完了しているか確認 */
   isCrawlComplete(): Promise<boolean>;
+  /** characters_glamour.fetched_at の MIN/MAX を取得 */
+  getDataDateRange(): Promise<DataDateRange>;
   /** Supabase のデータをクリーンアップ（sync 成功後に呼び出し） */
   cleanup(): Promise<void>;
 }
@@ -128,6 +137,25 @@ export function createAggregator(deps: AggregatorDependencies): Aggregator {
       const progress = result[0]!.progress;
       // exitReason が設定されていれば同期可能
       return progress.exitReason === 'COMPLETED' || progress.exitReason === 'LIMIT_REACHED';
+    },
+
+    /**
+     * characters_glamour.fetched_at の MIN/MAX を取得
+     * フロントエンドでの「データ鮮度表示」に使用
+     */
+    async getDataDateRange(): Promise<DataDateRange> {
+      const result = await db
+        .select({
+          dataFrom: sql<Date>`MIN(${charactersGlamour.fetchedAt})`,
+          dataTo: sql<Date>`MAX(${charactersGlamour.fetchedAt})`,
+        })
+        .from(charactersGlamour);
+
+      const row = result[0];
+      return {
+        dataFrom: row?.dataFrom ?? null,
+        dataTo: row?.dataTo ?? null,
+      };
     },
 
     /**

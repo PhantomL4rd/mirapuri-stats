@@ -108,9 +108,19 @@ export async function runSync(
       pairsProgress.processed = pairs.length;
       onProgress?.(pairsProgress);
 
-      // Phase 4: コミット（アトミック切り替え）
+      // Phase 4: データ取得期間を取得
+      console.log('[Sync] Getting data date range...');
+      const dateRange = await aggregator.getDataDateRange();
+      console.log(
+        `[Sync] Data range: ${dateRange.dataFrom?.toISOString() ?? 'null'} - ${dateRange.dataTo?.toISOString() ?? 'null'}`,
+      );
+
+      // Phase 5: コミット（アトミック切り替え）
       console.log('[Sync] Committing sync...');
-      await client.commitSync(version);
+      await client.commitSync(version, {
+        dataFrom: dateRange.dataFrom ?? undefined,
+        dataTo: dateRange.dataTo ?? undefined,
+      });
       console.log('[Sync] Sync committed successfully');
     } catch (error) {
       result.errors.push(`Stats sync failed: ${(error as Error).message}`);
