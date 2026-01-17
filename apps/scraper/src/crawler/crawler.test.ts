@@ -233,7 +233,7 @@ describe('crawler', () => {
       expect(stats.processedKeys).toBe(2);
     });
 
-    it('limit未指定時はデフォルト5000人', async () => {
+    it('limit未指定時はデフォルト10000人', async () => {
       const deps = createMockDeps();
       const crawler = createCrawler({ crawlerName: 'test', dryRun: false }, deps);
 

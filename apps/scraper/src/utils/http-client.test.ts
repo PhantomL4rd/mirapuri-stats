@@ -79,7 +79,7 @@ describe('HttpClient', () => {
 
     it('should use default config values', () => {
       expect(DEFAULT_CONFIG.userAgent).toBe('MirapriStats/1.0');
-      expect(DEFAULT_CONFIG.rateLimitMs).toBe(5000);
+      expect(DEFAULT_CONFIG.rateLimitMs).toBe(10000);
     });
   });
 
