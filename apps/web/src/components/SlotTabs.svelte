@@ -2,27 +2,27 @@
   import { cn } from '../lib/utils';
 
   interface Props {
-    currentSlot: number;
+    currentSlot: string;
   }
 
   let { currentSlot }: Props = $props();
 
   const slots = [
-    { id: 2, name: '胴' },
-    { id: 1, name: '頭' },
-    { id: 3, name: '手' },
-    { id: 4, name: '脚' },
-    { id: 5, name: '足' },
+    { slug: 'body', name: '胴' },
+    { slug: 'head', name: '頭' },
+    { slug: 'hands', name: '手' },
+    { slug: 'legs', name: '脚' },
+    { slug: 'feet', name: '足' },
   ];
 </script>
 
 <div class="flex gap-1 border-b border-border">
   {#each slots as slot}
     <a
-      href={`/?slot=${slot.id}`}
+      href={`/?slot=${slot.slug}`}
       class={cn(
         'px-4 py-2 text-sm font-medium transition-colors',
-        currentSlot === slot.id
+        currentSlot === slot.slug
           ? 'border-b-2 border-foreground text-foreground'
           : 'text-muted-foreground hover:text-foreground'
       )}

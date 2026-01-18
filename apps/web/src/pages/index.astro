@@ -4,12 +4,13 @@ import PrivacyRibbon from '../components/PrivacyRibbon.astro';
 import SlotTabs from '../components/SlotTabs.svelte';
 import VersatilityRanking from '../components/VersatilityRanking.astro';
 import { getVersatilityRanking, getDataFreshness } from '../lib/queries';
-import { SLOT_NAMES } from '../lib/db';
+import { SLOT_IDS } from '../lib/db';
 
-// クエリパラメータからスロットIDを取得（デフォルト: 2 = 胴）
+// クエリパラメータからスロットを取得（デフォルト: body = 胴）
 const url = new URL(Astro.request.url);
-const slotParam = url.searchParams.get('slot');
-const currentSlot = slotParam ? parseInt(slotParam, 10) : 2;
+const slotParam = url.searchParams.get('slot') ?? 'body';
+const currentSlot = slotParam as keyof typeof SLOT_IDS;
+const slotId = SLOT_IDS[currentSlot] ?? 2;
 
 // D1からデータ取得
 const db = Astro.locals.runtime.env.DB;
@@ -18,39 +19,23 @@ let freshness: Awaited<ReturnType<typeof getDataFreshness>> = { dataFrom: null, 
 
 try {
   [items, freshness] = await Promise.all([
-    getVersatilityRanking(db, currentSlot, 20),
+    getVersatilityRanking(db, slotId, 20),
     getDataFreshness(db),
   ]);
 } catch (e) {
   console.error('D1 query error:', e);
 }
-
-// 日付フォーマット
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return '不明';
-  const date = new Date(dateStr);
-  return `${date.getMonth() + 1}月${date.getDate()}日`;
-}
-
-const slotName = SLOT_NAMES[currentSlot] ?? '装備';
 ---
 
-<BaseLayout title={`${slotName}の着回し力ランキング | ミラプリパルス`}>
+<BaseLayout title={`ミラプリパルス`} freshness={freshness}>
   <PrivacyRibbon slot="ribbon" />
 
   <div class="space-y-6">
     <div>
-      <h1 class="text-2xl font-bold">着回し力ランキング</h1>
+      <h1 class="text-2xl font-bold">力ランキング</h1>
       <p class="mt-1 text-sm text-muted-foreground">
         多くの装備とペアになっている「万能選手」を表示しています
       </p>
-      {
-        freshness.dataFrom && freshness.dataTo && (
-          <p class="mt-1 text-xs text-muted-foreground">
-            {formatDate(freshness.dataFrom)} - {formatDate(freshness.dataTo)} 時点のデータ
-          </p>
-        )
-      }
     </div>
 
     <SlotTabs currentSlot={currentSlot} client:load />

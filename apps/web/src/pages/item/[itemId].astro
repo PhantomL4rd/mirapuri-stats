@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PrivacyRibbon from '../../components/PrivacyRibbon.astro';
-import { getItemInfo, getPartnerItems } from '../../lib/queries';
+import { getItemInfo, getPartnerItems, getDataFreshness } from '../../lib/queries';
 import { SLOT_NAMES } from '../../lib/db';
 
 const { itemId } = Astro.params;
@@ -12,9 +12,10 @@ if (!itemId) {
 
 const db = Astro.locals.runtime.env.DB;
 
-const [itemInfo, partnerItems] = await Promise.all([
+const [itemInfo, partnerItems, freshness] = await Promise.all([
   getItemInfo(db, itemId),
   getPartnerItems(db, itemId, 20),
+  getDataFreshness(db),
 ]);
 
 if (!itemInfo) {
@@ -28,7 +29,7 @@ function getLodestoneUrl(id: string): string {
 }
 ---
 
-<BaseLayout title={`${itemInfo.itemName}の相方装備 | ミラプリパルス`}>
+<BaseLayout title={`${itemInfo.itemName}のベストマッチ | ミラプリパルス`} freshness={freshness}>
   <PrivacyRibbon slot="ribbon" />
 
   <div class="space-y-6">

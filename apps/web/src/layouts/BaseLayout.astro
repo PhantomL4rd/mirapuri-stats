@@ -1,13 +1,26 @@
 ---
 import '../styles/global.css';
+import type { DataFreshness } from '../lib/queries';
 
 interface Props {
   title?: string;
   description?: string;
+  freshness?: DataFreshness;
 }
 
-const { title = 'ミラプリパルス', description = 'FF14プレイヤーのミラプリ傾向を集計・可視化' } =
+const { title = 'ミラプリパルス', description = 'FF14プレイヤーのミラプリ傾向を集計・可視化', freshness } =
   Astro.props;
+
+function formatDateSlash(dateStr: string | null): string {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}/${m}/${d}`;
+}
+
+const showFreshness = freshness?.dataFrom && freshness?.dataTo;
 ---
 
 <!doctype html>
@@ -31,8 +44,13 @@ const { title = 'ミラプリパルス', description = 'FF14プレイヤーの�
     <slot name="ribbon" />
 
     <header class="border-b bg-card">
-      <div class="mx-auto max-w-4xl px-4 py-4">
+      <div class="mx-auto max-w-4xl px-4 py-4 flex items-center justify-between">
         <a href="/" class="text-xl font-bold hover:text-muted-foreground"> ミラプリパルス </a>
+        {showFreshness && (
+          <span class="text-xs text-muted-foreground">
+            統計期間: {formatDateSlash(freshness!.dataFrom)} - {formatDateSlash(freshness!.dataTo)}
+          </span>
+        )}
       </div>
     </header>
 
