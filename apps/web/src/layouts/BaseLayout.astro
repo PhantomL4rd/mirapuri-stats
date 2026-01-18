@@ -1,5 +1,7 @@
 ---
 import '../styles/global.css';
+import { TrendingUp } from 'lucide-svelte';
+import HeaderMenu from '../components/HeaderMenu.svelte';
 import type { DataFreshness } from '../lib/queries';
 
 interface Props {
@@ -37,14 +39,17 @@ const showFreshness = freshness?.dataFrom && freshness?.dataTo;
   <body class="min-h-screen bg-background text-foreground">
     <slot name="ribbon" />
 
-    <header class="border-b bg-card">
-      <div class="mx-auto max-w-4xl px-4 py-4 flex items-center justify-between">
-        <a href="/" class="text-xl font-bold hover:text-muted-foreground"> ミラプリインサイト </a>
-        {showFreshness && (
-          <span class="text-xs text-muted-foreground">
-            統計期間: {formatDateSlash(freshness!.dataFrom)} - {formatDateSlash(freshness!.dataTo)}
-          </span>
-        )}
+    <header class="bg-primary text-primary-foreground mb-8">
+      <div class="mx-auto max-w-4xl px-4 h-14 flex items-center justify-between">
+        <div class="flex-1">
+          <a href="/" class="flex items-center gap-2 text-xl font-bold hover:opacity-80 transition-opacity">
+            <TrendingUp class="size-6" />
+            ミラプリインサイト
+          </a>
+        </div>
+        <div class="flex items-center gap-1">
+          <HeaderMenu client:load />
+        </div>
       </div>
     </header>
 
@@ -58,6 +63,11 @@ const showFreshness = freshness?.dataFrom && freshness?.dataTo;
         <span class="mx-2">|</span>
         <a href="/faq" class="hover:underline">FAQ</a>
       </div>
+      {showFreshness && (
+        <div class="mx-auto max-w-4xl px-4 pb-2 text-center text-xs text-muted-foreground">
+          統計期間: {formatDateSlash(freshness!.dataFrom)} - {formatDateSlash(freshness!.dataTo)}
+        </div>
+      )}
       <div class="mx-auto max-w-4xl px-4 pb-4 text-center text-xs text-muted-foreground">
         © SQUARE ENIX
       </div>
