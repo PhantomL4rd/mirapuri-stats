@@ -3,95 +3,55 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import PrivacyRibbon from '../components/PrivacyRibbon.astro';
 ---
 
-<BaseLayout title="このサイトについて | ミラプリ統計">
+<BaseLayout title="このサイトについて | ミラプリパルス">
   <PrivacyRibbon slot="ribbon" />
 
-  <article class="prose prose-gray max-w-none">
-    <h1>このサイトについて</h1>
+  <article class="max-w-none">
+    <h1 class="text-2xl font-bold text-foreground">このサイトについて</h1>
 
-    <p>
-      ミラプリ統計は、FF14プレイヤーのミラプリ（glamour）の傾向を集計・可視化するサイトです。
+    <p class="mt-4 text-muted-foreground">
+      ミラプリパルスは、FF14プレイヤーのミラプリ（glamour）の傾向を集計・可視化するサイトです。
     </p>
 
-    <h2>ミラプリ投稿サイトとの違い</h2>
+    <h2 class="mt-8 mb-4 text-xl font-bold border-b border-border pb-2 text-foreground">できること</h2>
 
-    <p>「投稿サイトがあるじゃん」と思うかもしれません。でも、このサイトは少し違います。</p>
+    <ul class="my-4 pl-6 list-disc text-muted-foreground">
+      <li class="my-2">人気のミラプリアイテムがわかる</li>
+      <li class="my-2">アイテムの組み合わせ傾向がわかる</li>
+      <li class="my-2">ミラプリの参考になる</li>
+    </ul>
 
-    <p>
-      <strong>ファッションショー</strong> と <strong>ストリートスナップ</strong> の違い、と言えば伝わるでしょうか。
+    <h2 class="mt-8 mb-4 text-xl font-bold border-b border-border pb-2 text-foreground">プライバシーへの配慮</h2>
+
+    <ul class="my-4 pl-6 list-disc text-muted-foreground">
+      <li class="my-2">
+        <strong class="text-foreground">個人は特定できません</strong> - 3人未満の組み合わせは表示しない仕組み（k-匿名化）を採用
+      </li>
+      <li class="my-2"><strong class="text-foreground">キャラクター名・IDは保存しません</strong> - 集計結果の数字のみを保持</li>
+      <li class="my-2"><strong class="text-foreground">公開情報のみ使用</strong> - ログイン不要で誰でも見られるLodestone情報のみ</li>
+      <li class="my-2"><strong class="text-foreground">個人ページは存在しません</strong> - 特定のキャラクターを表示する機能はありません</li>
+      <li class="my-2">
+        <strong class="text-foreground">オプトアウト可能</strong> - プロフィールに <code class="bg-muted px-1 py-0.5 rounded text-sm">#opt-out-stats</code> と書くと除外されます
+      </li>
+    </ul>
+
+    <h2 class="mt-8 mb-4 text-xl font-bold border-b border-border pb-2 text-foreground">運営方針</h2>
+
+    <ul class="my-4 pl-6 list-disc text-muted-foreground">
+      <li class="my-2">完全無料・非営利（広告なし）</li>
+      <li class="my-2">AI・機械学習の訓練には使用しません</li>
+      <li class="my-2">サンプリングによりLodestoneへの負荷を最小限に</li>
+    </ul>
+
+    <h2 class="mt-8 mb-4 text-xl font-bold border-b border-border pb-2 text-foreground">投稿サイトとの違い</h2>
+
+    <p class="text-muted-foreground">
+      投稿サイトが「ファッションショー」なら、ここは「ストリートスナップ」。<br />
+      作品ではなく、実際に着られている装備の統計です。
     </p>
 
-    <ul>
-      <li>
-        <strong>投稿サイト</strong> = ファッションショー
-        <ul>
-          <li>「見て！」と選び抜かれた<strong>作品</strong></li>
-          <li>投稿者のセンスとこだわりが詰まった、とっておきの一着</li>
-        </ul>
-      </li>
-      <li>
-        <strong>ミラプリ統計</strong> = ストリートスナップ
-        <ul>
-          <li>実際にエオルゼアで着られている装備の<strong>統計</strong></li>
-          <li>「今、何が本当に流行っているか」のリアルなデータ</li>
-        </ul>
-      </li>
-    </ul>
+    <h2 class="mt-8 mb-4 text-xl font-bold border-b border-border pb-2 text-foreground">お問い合わせ</h2>
 
-    <p>投稿サイトは「こう着たい」の集まり。<br />ミラプリ統計は「こう着てる」の集計。</p>
-
-    <p>
-      どちらが良い悪いではなく、用途が違います。<br />
-      「みんなが実際に何を合わせているか」を知りたいとき、このサイトが役に立てば幸いです。
-    </p>
-
-    <h2>できること</h2>
-
-    <ul>
-      <li>人気のミラプリアイテムがわかる</li>
-      <li>アイテムの組み合わせ傾向がわかる</li>
-      <li>ミラプリの参考になる</li>
-    </ul>
-
-    <h2>プライバシーへの配慮</h2>
-
-    <ul>
-      <li>
-        <strong>個人は特定できません</strong> - 3人未満の組み合わせは表示しない仕組み（k-匿名化）を採用
-      </li>
-      <li><strong>キャラクター名・IDは保存しません</strong> - 集計結果の数字のみを保持</li>
-      <li><strong>公開情報のみ使用</strong> - ログイン不要で誰でも見られるLodestone情報のみ</li>
-      <li><strong>個人ページは存在しません</strong> - 特定のキャラクターを表示する機能はありません</li>
-      <li>
-        <strong>オプトアウト可能</strong> - プロフィールに <code>#opt-out-stats</code> と書くと除外されます
-      </li>
-    </ul>
-
-    <h2>運営方針</h2>
-
-    <ul>
-      <li>完全無料・非営利（広告なし）</li>
-      <li>AI・機械学習の訓練には使用しません</li>
-      <li>サンプリングによりLodestoneへの負荷を最小限に</li>
-    </ul>
-
-    <h2>お問い合わせ</h2>
-
-    <p>ご意見・ご質問があれば Lodestoneの日記 までお願いします。</p>
+    <p class="text-muted-foreground">ご意見・ご質問があれば Lodestoneの日記 までお願いします。</p>
   </article>
 </BaseLayout>
-
-<style>
-  .prose h2 {
-    @apply mt-8 mb-4 text-xl font-bold border-b pb-2;
-  }
-  .prose ul {
-    @apply my-4 pl-6 list-disc;
-  }
-  .prose li {
-    @apply my-2;
-  }
-  .prose code {
-    @apply bg-gray-100 px-1 py-0.5 rounded text-sm;
-  }
-</style>

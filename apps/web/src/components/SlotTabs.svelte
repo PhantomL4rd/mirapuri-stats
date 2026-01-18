@@ -16,15 +16,15 @@
   ];
 </script>
 
-<div class="flex gap-1 border-b">
+<div class="flex gap-1 border-b border-border">
   {#each slots as slot}
     <a
       href={`/?slot=${slot.id}`}
       class={cn(
         'px-4 py-2 text-sm font-medium transition-colors',
         currentSlot === slot.id
-          ? 'border-b-2 border-blue-500 text-blue-600'
-          : 'text-gray-500 hover:text-gray-700'
+          ? 'border-b-2 border-foreground text-foreground'
+          : 'text-muted-foreground hover:text-foreground'
       )}
     >
       {slot.name}

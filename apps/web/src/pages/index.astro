@@ -35,18 +35,18 @@ function formatDate(dateStr: string | null): string {
 const slotName = SLOT_NAMES[currentSlot] ?? '装備';
 ---
 
-<BaseLayout title={`${slotName}の着回し力ランキング | ミラプリ統計`}>
+<BaseLayout title={`${slotName}の着回し力ランキング | ミラプリパルス`}>
   <PrivacyRibbon slot="ribbon" />
 
   <div class="space-y-6">
     <div>
       <h1 class="text-2xl font-bold">着回し力ランキング</h1>
-      <p class="mt-1 text-sm text-gray-500">
+      <p class="mt-1 text-sm text-muted-foreground">
         多くの装備とペアになっている「万能選手」を表示しています
       </p>
       {
         freshness.dataFrom && freshness.dataTo && (
-          <p class="mt-1 text-xs text-gray-400">
+          <p class="mt-1 text-xs text-muted-foreground">
             {formatDate(freshness.dataFrom)} - {formatDate(freshness.dataTo)} 時点のデータ
           </p>
         )

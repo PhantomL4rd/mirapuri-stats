@@ -23,7 +23,7 @@ export interface VersatilityItem {
 export async function getVersatilityRanking(
   db: D1Database,
   slotId: number | null = 2, // デフォルト: 胴
-  limit = 20
+  limit = 20,
 ): Promise<VersatilityItem[]> {
   const version = await getActiveVersion(db);
 

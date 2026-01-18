@@ -6,7 +6,7 @@ interface Props {
   description?: string;
 }
 
-const { title = 'ミラプリ統計', description = 'FF14プレイヤーのミラプリ傾向を集計・可視化' } =
+const { title = 'ミラプリパルス', description = 'FF14プレイヤーのミラプリ傾向を集計・可視化' } =
   Astro.props;
 ---
 
@@ -18,15 +18,21 @@ const { title = 'ミラプリ統計', description = 'FF14プレイヤーのミ�
     <meta name="description" content={description} />
     <meta name="robots" content="noindex, nofollow" />
     <title>{title}</title>
+    <!-- ダークモード検出（FOUC防止のため head 内で実行） -->
+    <script is:inline>
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark');
+      }
+    </script>
     <!-- Lodestone ツールチップ -->
     <script src="https://img.finalfantasyxiv.com/lds/pc/global/js/eorzeadb/loader.js?v2"></script>
   </head>
-  <body class="min-h-screen bg-gray-50 text-gray-900">
+  <body class="min-h-screen bg-background text-foreground">
     <slot name="ribbon" />
 
-    <header class="border-b bg-white">
+    <header class="border-b bg-card">
       <div class="mx-auto max-w-4xl px-4 py-4">
-        <a href="/" class="text-xl font-bold hover:text-gray-600"> ミラプリ統計 </a>
+        <a href="/" class="text-xl font-bold hover:text-muted-foreground"> ミラプリパルス </a>
       </div>
     </header>
 
@@ -34,11 +40,14 @@ const { title = 'ミラプリ統計', description = 'FF14プレイヤーのミ�
       <slot />
     </main>
 
-    <footer class="border-t bg-white">
-      <div class="mx-auto max-w-4xl px-4 py-4 text-center text-sm text-gray-500">
+    <footer class="border-t bg-card">
+      <div class="mx-auto max-w-4xl px-4 py-4 text-center text-sm text-muted-foreground">
         <a href="/readme" class="hover:underline">このサイトについて</a>
         <span class="mx-2">|</span>
-        <span>© 2026 ミラプリ統計</span>
+        <a href="/faq" class="hover:underline">FAQ</a>
+      </div>
+      <div class="mx-auto max-w-4xl px-4 pb-4 text-center text-xs text-muted-foreground">
+        © SQUARE ENIX
       </div>
     </footer>
   </body>
