@@ -1,7 +1,6 @@
 ---
 import '../styles/global.css';
 import type { DataFreshness } from '../lib/queries';
-import { ModeWatcher } from 'mode-watcher';
 
 interface Props {
   title?: string;
@@ -32,11 +31,15 @@ const showFreshness = freshness?.dataFrom && freshness?.dataTo;
     <meta name="description" content={description} />
     <meta name="robots" content="noindex, nofollow" />
     <title>{title}</title>
+    <script is:inline>
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark');
+      }
+    </script>
     <!-- Lodestone ツールチップ -->
     <script src="https://lds-img.finalfantasyxiv.com/pc/global/js/eorzeadb/loader.js?v3"></script>
   </head>
   <body class="min-h-screen bg-background text-foreground">
-    <ModeWatcher client:load />
     <slot name="ribbon" />
 
     <header class="border-b bg-card">
