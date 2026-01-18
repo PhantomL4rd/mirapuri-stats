@@ -45,7 +45,7 @@ function getLodestoneUrl(id: string): string {
           {itemInfo.itemName}
         </a>
       </h1>
-      <p class="mt-1 text-sm text-muted-foreground">と相性の良い装備</p>
+      <p class="mt-1 text-sm text-muted-foreground">のベストマッチ</p>
     </div>
 
     <div class="space-y-2">
@@ -53,12 +53,9 @@ function getLodestoneUrl(id: string): string {
         partnerItems.length === 0 ? (
           <p class="text-center text-muted-foreground py-8">データがありません</p>
         ) : (
-          <ol class="space-y-2">
-            {partnerItems.map((item, index) => (
+          <ul class="space-y-2">
+            {partnerItems.map((item) => (
               <li class="flex items-center gap-3 rounded-lg border border-border bg-card p-3 shadow-sm">
-                <span class="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-bold text-muted-foreground">
-                  {index + 1}
-                </span>
                 <div class="flex-1">
                   <a
                     href={`/item/${item.itemId}`}
@@ -80,7 +77,7 @@ function getLodestoneUrl(id: string): string {
                 </a>
               </li>
             ))}
-          </ol>
+          </ul>
         )
       }
     </div>
