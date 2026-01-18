@@ -28,10 +28,8 @@ function getLodestoneUrl(itemId: string): string {
             </span>
             <div class="flex-1">
               <a
-                href={getLodestoneUrl(item.itemId)}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="eorzeadb_link font-medium text-card-foreground hover:underline"
+                href={`/item/${item.itemId}`}
+                class="font-medium text-card-foreground hover:underline"
               >
                 {item.itemName}
               </a>
@@ -39,6 +37,14 @@ function getLodestoneUrl(itemId: string): string {
                 {item.versatilityScore}種類の装備と相性◎
               </p>
             </div>
+            <a
+              href={getLodestoneUrl(item.itemId)}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="eorzeadb_link text-xs text-muted-foreground hover:text-foreground"
+            >
+              Lodestone
+            </a>
           </li>
         ))}
       </ol>

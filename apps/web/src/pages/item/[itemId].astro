@@ -1,0 +1,96 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PrivacyRibbon from '../../components/PrivacyRibbon.astro';
+import { getItemInfo, getPartnerItems } from '../../lib/queries';
+import { SLOT_NAMES } from '../../lib/db';
+
+const { itemId } = Astro.params;
+
+if (!itemId) {
+  return Astro.redirect('/');
+}
+
+const db = Astro.locals.runtime.env.DB;
+
+const [itemInfo, partnerItems] = await Promise.all([
+  getItemInfo(db, itemId),
+  getPartnerItems(db, itemId, 20),
+]);
+
+if (!itemInfo) {
+  return Astro.redirect('/');
+}
+
+const slotName = SLOT_NAMES[itemInfo.slotId] ?? '装備';
+
+function getLodestoneUrl(id: string): string {
+  return `https://jp.finalfantasyxiv.com/lodestone/playguide/db/item/${id}/`;
+}
+---
+
+<BaseLayout title={`${itemInfo.itemName}の相方装備 | ミラプリパルス`}>
+  <PrivacyRibbon slot="ribbon" />
+
+  <div class="space-y-6">
+    <div>
+      <p class="text-sm text-muted-foreground">{slotName}</p>
+      <h1 class="text-2xl font-bold">
+        <a
+          href={getLodestoneUrl(itemInfo.itemId)}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="eorzeadb_link hover:underline"
+        >
+          {itemInfo.itemName}
+        </a>
+      </h1>
+      <p class="mt-1 text-sm text-muted-foreground">と相性の良い装備</p>
+    </div>
+
+    <div class="space-y-2">
+      {
+        partnerItems.length === 0 ? (
+          <p class="text-center text-muted-foreground py-8">データがありません</p>
+        ) : (
+          <ol class="space-y-2">
+            {partnerItems.map((item, index) => (
+              <li class="flex items-center gap-3 rounded-lg border border-border bg-card p-3 shadow-sm">
+                <span class="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-bold text-muted-foreground">
+                  {index + 1}
+                </span>
+                <div class="flex-1">
+                  <a
+                    href={`/item/${item.itemId}`}
+                    class="font-medium text-card-foreground hover:underline"
+                  >
+                    {item.itemName}
+                  </a>
+                  <span class="ml-2 text-xs text-muted-foreground">
+                    {SLOT_NAMES[item.slotId] ?? ''}
+                  </span>
+                  <p class="text-sm text-muted-foreground">
+                    {item.pairCount}人がこの組み合わせ
+                  </p>
+                </div>
+                <a
+                  href={getLodestoneUrl(item.itemId)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="eorzeadb_link text-xs text-muted-foreground hover:text-foreground"
+                >
+                  Lodestone
+                </a>
+              </li>
+            ))}
+          </ol>
+        )
+      }
+    </div>
+
+    <div class="pt-4">
+      <a href="/" class="text-sm text-muted-foreground hover:underline">
+        ← ランキングに戻る
+      </a>
+    </div>
+  </div>
+</BaseLayout>
