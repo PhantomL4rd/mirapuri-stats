@@ -9,7 +9,7 @@ interface Props {
   freshness?: DataFreshness;
 }
 
-const { title = 'ミラプリパルス', description = 'FF14プレイヤーのミラプリ傾向を集計・可視化', freshness } =
+const { title = 'ミラプリインサイト', description = 'FF14プレイヤーのミラプリ傾向を集計・可視化', freshness } =
   Astro.props;
 
 function formatDateSlash(dateStr: string | null): string {
@@ -41,7 +41,7 @@ const showFreshness = freshness?.dataFrom && freshness?.dataTo;
 
     <header class="border-b bg-card">
       <div class="mx-auto max-w-4xl px-4 py-4 flex items-center justify-between">
-        <a href="/" class="text-xl font-bold hover:text-muted-foreground"> ミラプリパルス </a>
+        <a href="/" class="text-xl font-bold hover:text-muted-foreground"> ミラプリインサイト </a>
         {showFreshness && (
           <span class="text-xs text-muted-foreground">
             統計期間: {formatDateSlash(freshness!.dataFrom)} - {formatDateSlash(freshness!.dataTo)}

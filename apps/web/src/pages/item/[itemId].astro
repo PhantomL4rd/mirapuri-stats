@@ -29,7 +29,7 @@ function getLodestoneUrl(id: string): string {
 }
 ---
 
-<BaseLayout title={`${itemInfo.itemName}のベストマッチ | ミラプリパルス`} freshness={freshness}>
+<BaseLayout title={`${itemInfo.itemName}のベストマッチ | ミラプリインサイト`} freshness={freshness}>
   <PrivacyRibbon slot="ribbon" />
 
   <div class="space-y-6">
@@ -69,9 +69,6 @@ function getLodestoneUrl(id: string): string {
                   <span class="ml-2 text-xs text-muted-foreground">
                     {SLOT_NAMES[item.slotId] ?? ''}
                   </span>
-                  <p class="text-sm text-muted-foreground">
-                    {item.pairCount}人がこの組み合わせ
-                  </p>
                 </div>
                 <a
                   href={getLodestoneUrl(item.itemId)}
