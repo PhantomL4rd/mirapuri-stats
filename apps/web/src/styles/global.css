@@ -57,7 +57,6 @@
 }
 
 /* Lodestone ツールチップ - Tailwind のリセットから除外 */
-#eorzeadb_tooltip,
 #eorzeadb_tooltip *,
 #eorzeadb_tooltip *::before,
 #eorzeadb_tooltip *::after {
@@ -67,4 +66,5 @@
 #eorzeadb_tooltip {
   position: fixed !important;
   z-index: 9999 !important;
+  display: block;
 }     
