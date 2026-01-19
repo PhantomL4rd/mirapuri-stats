@@ -71,8 +71,8 @@ function getLodestoneUrl(id: string): string {
       {
         partnerItems.length === 0 ? (
           <p class="text-center text-muted-foreground py-8">データがありません</p>
-        ) : itemInfo.slotId === 2 ? (
-          // 胴装備: 部位ごとにアコーディオン
+        ) : itemInfo.slotId === 2 || itemInfo.slotId === 4 ? (
+          // 胴・脚装備: 部位ごとにアコーディオン（複数部位とペアがあるため）
           slotOrder.map((slotId) => {
             const items = partnersBySlot[slotId];
             if (!items || items.length === 0) return null;
@@ -109,7 +109,7 @@ function getLodestoneUrl(id: string): string {
             );
           })
         ) : (
-          // 胴以外: フラットリスト
+          // 頭・手・足: フラットリスト（単一部位とのペアのみ）
           <ul class="space-y-2">
             {partnerItems.map((item) => (
               <li class="flex items-center gap-3 rounded-lg border border-border bg-card p-3 shadow-sm">
