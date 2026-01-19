@@ -38,6 +38,19 @@ const showFreshness = freshness?.dataFrom && freshness?.dataTo;
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>
+
+    <!-- Lodestone ツールチップ -->
+    <script is:inline>
+      var eorzeadb = { dynamic_tooltip: true };
+    </script>
+    <script is:inline src="https://lds-img.finalfantasyxiv.com/pc/global/js/eorzeadb/loader.js?v3"></script>
+    <script is:inline>
+      document.addEventListener('DOMContentLoaded', function() {
+        if (window.eorzeadb && eorzeadb.parse) {
+          eorzeadb.parse();
+        }
+      });
+    </script>
   </head>
   <body class="min-h-screen bg-background text-foreground">
     <slot name="ribbon" />
@@ -75,11 +88,5 @@ const showFreshness = freshness?.dataFrom && freshness?.dataTo;
         © SQUARE ENIX
       </div>
     </footer>
-
-    <!-- Lodestone ツールチップ -->
-    <script is:inline>
-      var eorzeadb = { dynamic_tooltip: true };
-    </script>
-    <script is:inline src="https://lds-img.finalfantasyxiv.com/pc/global/js/eorzeadb/loader.js?v3"></script>
   </body>
 </html>
