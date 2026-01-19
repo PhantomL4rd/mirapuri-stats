@@ -20,9 +20,11 @@ jobs:
         run: |
           flyctl machine run . \
             --app mirapri-stats \
+            --region nrt \
             --dockerfile apps/scraper/Dockerfile \
             --config apps/scraper/fly.toml \
             --rm \
+            --detach \
             -- --dc Gaia
 
       - name: Run crawler for Mana
@@ -31,9 +33,11 @@ jobs:
         run: |
           flyctl machine run . \
             --app mirapri-stats \
+            --region nrt \
             --dockerfile apps/scraper/Dockerfile \
             --config apps/scraper/fly.toml \
             --rm \
+            --detach \
             -- --dc Mana
 
       - name: Run crawler for Elemental
@@ -42,9 +46,11 @@ jobs:
         run: |
           flyctl machine run . \
             --app mirapri-stats \
+            --region nrt \
             --dockerfile apps/scraper/Dockerfile \
             --config apps/scraper/fly.toml \
             --rm \
+            --detach \
             -- --dc Elemental
 
       - name: Run crawler for Meteor
@@ -53,7 +59,9 @@ jobs:
         run: |
           flyctl machine run . \
             --app mirapri-stats \
+            --region nrt \
             --dockerfile apps/scraper/Dockerfile \
             --config apps/scraper/fly.toml \
             --rm \
+            --detach \
             -- --dc Meteor
