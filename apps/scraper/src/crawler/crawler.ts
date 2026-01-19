@@ -100,16 +100,6 @@ export function createCrawler(config: CrawlerConfig, deps: CrawlerDependencies):
       if (existingProgress) {
         console.log(`[Crawler] Resuming from shuffled index ${startShuffledIndex}`);
         stats.processedCharacters = existingProgress.processedCharacters;
-
-        // シード不整合警告
-        if (existingProgress.seed !== seed) {
-          console.warn(
-            `[Crawler] WARNING: Seed mismatch! Progress has seed=${existingProgress.seed}, but current seed=${seed}`,
-          );
-          console.warn(
-            '[Crawler] This may cause inconsistent shuffling. Consider using --seed to match.',
-          );
-        }
       }
 
       // 各キーを順次処理（シャッフル後の配列位置ベース）

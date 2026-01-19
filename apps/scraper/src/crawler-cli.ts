@@ -10,7 +10,7 @@ import {
   DATA_CENTERS,
   type DataCenterName,
   DEFAULT_LIMIT,
-  DEFAULT_SEED,
+  loadProgress,
   resolveWorlds,
   type SearchKeyGeneratorConfig,
 } from './crawler';
@@ -69,8 +69,15 @@ interface ParsedArgs {
   dryRun: boolean;
   world: string | null;
   dataCenter: DataCenterName | null;
-  seed: number;
+  seed: number | null;
   limit: number;
+}
+
+/**
+ * 1-100のランダムなシード値を生成
+ */
+function generateRandomSeed(): number {
+  return Math.floor(Math.random() * 100) + 1;
 }
 
 /**
@@ -88,10 +95,10 @@ function parseArgs(args: string[]): ParsedArgs {
   const dcArg = dcIndex !== -1 ? args[dcIndex + 1] : null;
   const dataCenter = dcArg && dcArg in DATA_CENTERS ? (dcArg as DataCenterName) : null;
 
-  // --seed <number>
+  // --seed <number>（指定なしの場合はnull → 後で決定）
   const seedIndex = args.indexOf('--seed');
   const seedArg = seedIndex !== -1 ? args[seedIndex + 1] : null;
-  const seed = seedArg ? Number.parseInt(seedArg, 10) : DEFAULT_SEED;
+  const seed = seedArg ? Number.parseInt(seedArg, 10) : null;
 
   // --limit <number>
   const limitIndex = args.indexOf('--limit');
@@ -106,7 +113,7 @@ function parseArgs(args: string[]): ParsedArgs {
  */
 async function main() {
   const args = process.argv.slice(2);
-  const { dryRun, world, dataCenter, seed, limit } = parseArgs(args);
+  const { dryRun, world, dataCenter, seed: seedArg, limit } = parseArgs(args);
 
   // 環境変数チェック
   const databaseUrl = process.env['DATABASE_URL'];
@@ -115,36 +122,37 @@ async function main() {
     process.exit(1);
   }
 
-  // キージェネレーター設定
-  const keyGenConfig: SearchKeyGeneratorConfig = dataCenter
-    ? { dataCenter, seed }
+  // クローラー名を先に決定（progress読み込みに必要）
+  const baseKeyGenConfig: Omit<SearchKeyGeneratorConfig, 'seed'> = dataCenter
+    ? { dataCenter }
     : world
-      ? { worlds: [world], seed }
-      : { worlds: ['Tiamat'], seed }; // デフォルト
+      ? { worlds: [world] }
+      : { worlds: ['Tiamat'] }; // デフォルト
 
-  const targetWorlds = resolveWorlds(keyGenConfig);
+  const targetWorlds = resolveWorlds({ ...baseKeyGenConfig, seed: 1 }); // seed仮値
   const crawlerName = dataCenter
     ? `${dataCenter.toLowerCase()}-crawler`
     : `${(targetWorlds[0] ?? 'unknown').toLowerCase()}-crawler`;
 
-  console.log('=== Character List Crawler ===');
-  console.log(`Mode: ${dryRun ? 'DRY RUN' : 'LIVE'}`);
-  console.log(
-    `Target: ${dataCenter ? `DC: ${dataCenter} (${targetWorlds.length} worlds)` : `World: ${targetWorlds.join(', ')}`}`,
-  );
-  console.log(`Crawler Name: ${crawlerName}`);
-  console.log(`Seed: ${seed}`);
-  console.log(`Character Limit: ${limit}`);
-
-  // コンポーネント初期化
-  const keyGenerator = createSearchKeyGenerator(keyGenConfig);
-
+  // dryRunモード: ランダムseedで即実行
   if (dryRun) {
-    // dryRunモードはDB接続不要（進捗読み書きをスキップするため）
+    const seed = seedArg ?? generateRandomSeed();
+    const keyGenConfig: SearchKeyGeneratorConfig = { ...baseKeyGenConfig, seed };
+    const keyGenerator = createSearchKeyGenerator(keyGenConfig);
+
+    console.log('=== Character List Crawler ===');
+    console.log(`Mode: DRY RUN`);
+    console.log(
+      `Target: ${dataCenter ? `DC: ${dataCenter} (${targetWorlds.length} worlds)` : `World: ${targetWorlds.join(', ')}`}`,
+    );
+    console.log(`Crawler Name: ${crawlerName}`);
+    console.log(`Seed: ${seed}`);
+    console.log(`Character Limit: ${limit}`);
+
     const crawler = createCrawler(
       { crawlerName, dryRun: true, seed, limit },
       {
-        db: null as never, // dryRunでは使用しない
+        db: null as never,
         keyGenerator,
         listFetcher: { fetchAllCharacterIds: async () => [] },
         scraper: {
@@ -156,7 +164,6 @@ async function main() {
 
     await crawler.start();
 
-    // 属性分布サマリーを表示
     const keys = keyGenerator.generateAll();
     printDistributionSummary(keys.slice(0, 100));
 
@@ -166,6 +173,37 @@ async function main() {
 
   // DB接続
   const db = createDb(databaseUrl!);
+
+  // シード値を決定: --seed指定 > 既存progress > ランダム生成
+  const existingProgress = await loadProgress(db, crawlerName);
+  let seed: number;
+  let seedSource: string;
+
+  if (seedArg !== null) {
+    seed = seedArg;
+    seedSource = 'CLI argument';
+  } else if (existingProgress) {
+    seed = existingProgress.seed;
+    seedSource = 'existing progress';
+  } else {
+    seed = generateRandomSeed();
+    seedSource = 'randomly generated';
+  }
+
+  // キージェネレーター設定
+  const keyGenConfig: SearchKeyGeneratorConfig = { ...baseKeyGenConfig, seed };
+
+  console.log('=== Character List Crawler ===');
+  console.log(`Mode: LIVE`);
+  console.log(
+    `Target: ${dataCenter ? `DC: ${dataCenter} (${targetWorlds.length} worlds)` : `World: ${targetWorlds.join(', ')}`}`,
+  );
+  console.log(`Crawler Name: ${crawlerName}`);
+  console.log(`Seed: ${seed} (${seedSource})`);
+  console.log(`Character Limit: ${limit}`);
+
+  // コンポーネント初期化
+  const keyGenerator = createSearchKeyGenerator(keyGenConfig);
 
   // HTTPクライアント（リトライ機能付き）
   const baseHttpClient = createHttpClient();
