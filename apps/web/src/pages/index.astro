@@ -19,7 +19,7 @@ let freshness: Awaited<ReturnType<typeof getDataFreshness>> = { dataFrom: null, 
 
 try {
   [items, freshness] = await Promise.all([
-    getVersatilityRanking(db, slotId, 20),
+    getVersatilityRanking(db, slotId, 10),
     getDataFreshness(db),
   ]);
 } catch (e) {
