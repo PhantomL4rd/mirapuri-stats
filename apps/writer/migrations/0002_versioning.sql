@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS pairs (
   item_id_a TEXT NOT NULL,
   item_id_b TEXT NOT NULL,
   pair_count INTEGER NOT NULL DEFAULT 0,
-  rank INTEGER NOT NULL CHECK (rank BETWEEN 1 AND 10),
+  rank INTEGER NOT NULL,
   PRIMARY KEY (version, slot_pair, item_id_a, rank)
 );
 

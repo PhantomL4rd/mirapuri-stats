@@ -1,5 +1,5 @@
--- pairs テーブルを双方向対応に変更
--- 既存データは破棄可能なので、テーブル DROP → CREATE で対応
+-- pairs テーブルの rank CHECK 制約を削除
+-- SQLite は ALTER TABLE での制約削除をサポートしないため、テーブル再作成で対応
 
 DROP TABLE IF EXISTS pairs;
 

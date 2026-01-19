@@ -59,8 +59,8 @@ pairsRoute.post('/', async (c) => {
     if (typeof pair.pairCount !== 'number' || pair.pairCount < 0) {
       return c.json({ error: 'Each pair must have a non-negative pairCount' }, 400);
     }
-    if (typeof pair.rank !== 'number' || pair.rank < 1 || pair.rank > 10) {
-      return c.json({ error: 'Each pair must have a rank between 1 and 10' }, 400);
+    if (typeof pair.rank !== 'number' || pair.rank < 1 || pair.rank > 11) {
+      return c.json({ error: 'Each pair must have a rank between 1 and 11' }, 400);
     }
   }
 

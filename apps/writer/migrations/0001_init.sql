@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS item_pairs (
   item_id_a TEXT NOT NULL REFERENCES items(id),
   item_id_b TEXT NOT NULL REFERENCES items(id),
   pair_count INTEGER NOT NULL DEFAULT 0,
-  rank INTEGER NOT NULL CHECK (rank BETWEEN 1 AND 10),
+  rank INTEGER NOT NULL,
   PRIMARY KEY (slot_pair, item_id_a, rank)
 );
 

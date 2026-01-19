@@ -15,7 +15,7 @@ async function runMigrations(db: D1Database) {
       `CREATE TABLE IF NOT EXISTS usage (version TEXT NOT NULL, slot_id INTEGER NOT NULL, item_id TEXT NOT NULL, usage_count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (version, slot_id, item_id))`,
     ),
     db.prepare(
-      `CREATE TABLE IF NOT EXISTS pairs (version TEXT NOT NULL, base_slot_id INTEGER NOT NULL CHECK (base_slot_id BETWEEN 1 AND 5), partner_slot_id INTEGER NOT NULL CHECK (partner_slot_id BETWEEN 1 AND 5), base_item_id TEXT NOT NULL, partner_item_id TEXT NOT NULL, pair_count INTEGER NOT NULL DEFAULT 0, rank INTEGER NOT NULL CHECK (rank BETWEEN 1 AND 10), PRIMARY KEY (version, base_slot_id, partner_slot_id, base_item_id, rank))`,
+      `CREATE TABLE IF NOT EXISTS pairs (version TEXT NOT NULL, base_slot_id INTEGER NOT NULL CHECK (base_slot_id BETWEEN 1 AND 5), partner_slot_id INTEGER NOT NULL CHECK (partner_slot_id BETWEEN 1 AND 5), base_item_id TEXT NOT NULL, partner_item_id TEXT NOT NULL, pair_count INTEGER NOT NULL DEFAULT 0, rank INTEGER NOT NULL, PRIMARY KEY (version, base_slot_id, partner_slot_id, base_item_id, rank))`,
     ),
   ]);
 }
@@ -414,7 +414,7 @@ describe('POST /api/pairs', () => {
               baseItemId: 'item-001',
               partnerItemId: 'item-002',
               pairCount: 50,
-              rank: 11,
+              rank: 12,
             },
           ],
         }),
