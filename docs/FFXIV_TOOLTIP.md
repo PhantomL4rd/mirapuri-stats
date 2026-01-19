@@ -27,16 +27,16 @@ Lodestone のツールチップは、Tailwind CSS の preflight（リセットCS
 }
 ```
 
-### 2. HTML head でスクリプトを読み込み
+### 2. HTML `<head>` での設定
 
 ```html
 <head>
-  <!-- Lodestone への事前接続（パフォーマンス最適化） -->
+  <!-- 事前接続（パフォーマンス最適化だが効果は限定的） -->
   <link rel="preconnect" href="https://lds-img.finalfantasyxiv.com" />
   <link rel="dns-prefetch" href="https://lds-img.finalfantasyxiv.com" />
   <link rel="preload" href="https://lds-img.finalfantasyxiv.com/pc/global/js/eorzeadb/loader.js?v3" as="script" />
 
-  <!-- Lodestone ツールチップ初期化 -->
+  <!-- スクリプト読み込み -->
   <script>
     var eorzeadb = { dynamic_tooltip: true };
   </script>
@@ -83,7 +83,6 @@ Lodestone のツールチップは、Tailwind CSS の preflight（リセットCS
 | `preconnect` | Lodestone サーバーへの接続を事前に確立 |
 | `dns-prefetch` | DNS 解決を事前に実行 |
 | `preload` | スクリプトを早期に読み込み開始 |
-| `DOMContentLoaded` での `parse()` | ページ読み込み完了後にリンクを再スキャン |
 
 ### eorzeadb オプション
 
@@ -93,14 +92,32 @@ var eorzeadb = {
 };
 ```
 
+## 既知の制限
+
+### ツールチップ DOM 生成に約1秒かかる
+
+Lodestone のスクリプトが `#eorzeadb_tooltip` 要素を生成するまでに約1秒かかる。
+
+**原因：** loader.js 内に `setTimeout(..., 1000)` がハードコードされている。
+
+```javascript
+// loader.js より抜粋
+setTimeout(function() {
+    typeof jQuery == "undefined" ?
+        external_load('js', ... , after_load) : after_load();
+}, 1000);  // ← 1秒の遅延
+```
+
+これは Lodestone スクリプト内部の処理であり、こちら側では改善できない。`preconnect`, `dns-prefetch`, `preload` を設定しても、この1秒の遅延は回避不可能。
+
 ## トラブルシューティング
 
 ### ツールチップが表示されない
 
 1. **開発者ツールで確認**
    ```javascript
-   setTimeout(() => {
-     const t = document.getElementById('eorzeadb_tooltip');
+   setTimeout(function() {
+     var t = document.getElementById('eorzeadb_tooltip');
      console.log('display:', t.style.display);
      console.log('rect:', t.getBoundingClientRect());
    }, 3000);
@@ -111,10 +128,6 @@ var eorzeadb = {
    - `width`, `height` が 0 でないか
    - `position` が `fixed` になっているか
 
-### 2回ホバーしないと表示されない
-
-`DOMContentLoaded` で `eorzeadb.parse()` を呼び出しているか確認。
-
 ### スタイルが崩れる
 
 `all: revert` は使わない。Lodestone のスタイルも一緒にリセットされてしまう。
@@ -122,4 +135,3 @@ var eorzeadb = {
 ## 参考リンク
 
 - [Lodestone データベース](https://jp.finalfantasyxiv.com/lodestone/playguide/db/)
-- [Eorzea Database ツールチップ](https://jp.finalfantasyxiv.com/lodestone/playguide/db/tooltip/)
