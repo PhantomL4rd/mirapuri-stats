@@ -48,7 +48,7 @@
 }
 
 @layer base {
-  * {
+  *:where(:not(#eorzeadb_tooltip, #eorzeadb_tooltip *)) {
     @apply border-border;
   }
   body {
@@ -56,18 +56,8 @@
   }
 }
 
-/* Lodestone ツールチップ - Tailwind のリセットから除外 */
+/* Lodestone ツールチップ */
 #eorzeadb_tooltip {
   position: fixed !important;
   z-index: 9999 !important;
-}
-
-#eorzeadb_tooltip * {
-  all: revert;
-}
-
-#eorzeadb_tooltip img {
-  display: revert !important;
-  max-width: revert !important;
-  height: revert !important;
 }     
