@@ -13,8 +13,9 @@ const MIN_COUNT_THRESHOLD = 3;
 /**
  * ペアランキングの上位件数
  * 各アイテムに対して、組み合わせ相手の上位N件を保存
+ * 表示時に1位を除外するため、11件保存して10件表示
  */
-const TOP_PAIRS_LIMIT = 10;
+const TOP_PAIRS_LIMIT = 11;
 
 /**
  * Usage集計から除外するアイテムID
