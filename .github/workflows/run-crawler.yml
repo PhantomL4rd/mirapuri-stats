@@ -35,8 +35,8 @@ jobs:
           fi
           echo "ref=$IMAGE_REF" >> $GITHUB_OUTPUT
           echo "Image ref: $IMAGE_REF"
-          # Wait for image to be available
-          sleep 5
+          # Wait for image to be available in registry
+          sleep 30
 
       - name: Run crawler for Gaia
         env:
