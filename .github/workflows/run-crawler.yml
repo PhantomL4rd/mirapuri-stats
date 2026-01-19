@@ -3,6 +3,11 @@ name: Run Crawler
 on:
   workflow_dispatch: # Manual trigger only
 
+env:
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+  APP_NAME: mirapri-stats
+  FLY_API_HOSTNAME: https://api.machines.dev
+
 jobs:
   crawl:
     runs-on: ubuntu-latest
@@ -14,58 +19,127 @@ jobs:
         with:
           version: latest
 
+      - name: Build and push image
+        run: |
+          flyctl deploy --build-only --push \
+            --app $APP_NAME \
+            --dockerfile apps/scraper/Dockerfile \
+            --config apps/scraper/fly.toml
+
+      - name: Get image ref
+        id: image
+        run: |
+          IMAGE_REF="registry.fly.io/${APP_NAME}:deployment-$(git rev-parse --short HEAD)"
+          echo "ref=$IMAGE_REF" >> $GITHUB_OUTPUT
+
       - name: Run crawler for Gaia
         env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          IMAGE_REF: ${{ steps.image.outputs.ref }}
         run: |
-          yes | flyctl machine run . \
-            --app mirapri-stats \
-            --org phantoml4rd \
-            --region nrt \
-            --dockerfile apps/scraper/Dockerfile \
-            --config apps/scraper/fly.toml \
-            --rm \
-            --detach \
-            -- --dc Gaia
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${FLY_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "${FLY_API_HOSTNAME}/v1/apps/${APP_NAME}/machines" \
+            -d "{
+              \"name\": \"crawler-gaia-$(date +%s)\",
+              \"region\": \"nrt\",
+              \"config\": {
+                \"image\": \"${IMAGE_REF}\",
+                \"init\": {
+                  \"exec\": [\"node\", \"dist/crawler-cli.js\", \"--dc\", \"Gaia\"]
+                },
+                \"auto_destroy\": true,
+                \"restart\": {
+                  \"policy\": \"no\"
+                },
+                \"guest\": {
+                  \"cpu_kind\": \"shared\",
+                  \"cpus\": 1,
+                  \"memory_mb\": 256
+                }
+              }
+            }"
 
       - name: Run crawler for Mana
         env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          IMAGE_REF: ${{ steps.image.outputs.ref }}
         run: |
-          yes | flyctl machine run . \
-            --app mirapri-stats \
-            --org phantoml4rd \
-            --region nrt \
-            --dockerfile apps/scraper/Dockerfile \
-            --config apps/scraper/fly.toml \
-            --rm \
-            --detach \
-            -- --dc Mana
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${FLY_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "${FLY_API_HOSTNAME}/v1/apps/${APP_NAME}/machines" \
+            -d "{
+              \"name\": \"crawler-mana-$(date +%s)\",
+              \"region\": \"nrt\",
+              \"config\": {
+                \"image\": \"${IMAGE_REF}\",
+                \"init\": {
+                  \"exec\": [\"node\", \"dist/crawler-cli.js\", \"--dc\", \"Mana\"]
+                },
+                \"auto_destroy\": true,
+                \"restart\": {
+                  \"policy\": \"no\"
+                },
+                \"guest\": {
+                  \"cpu_kind\": \"shared\",
+                  \"cpus\": 1,
+                  \"memory_mb\": 256
+                }
+              }
+            }"
 
       - name: Run crawler for Elemental
         env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          IMAGE_REF: ${{ steps.image.outputs.ref }}
         run: |
-          yes | flyctl machine run . \
-            --app mirapri-stats \
-            --org phantoml4rd \
-            --region nrt \
-            --dockerfile apps/scraper/Dockerfile \
-            --config apps/scraper/fly.toml \
-            --rm \
-            --detach \
-            -- --dc Elemental
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${FLY_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "${FLY_API_HOSTNAME}/v1/apps/${APP_NAME}/machines" \
+            -d "{
+              \"name\": \"crawler-elemental-$(date +%s)\",
+              \"region\": \"nrt\",
+              \"config\": {
+                \"image\": \"${IMAGE_REF}\",
+                \"init\": {
+                  \"exec\": [\"node\", \"dist/crawler-cli.js\", \"--dc\", \"Elemental\"]
+                },
+                \"auto_destroy\": true,
+                \"restart\": {
+                  \"policy\": \"no\"
+                },
+                \"guest\": {
+                  \"cpu_kind\": \"shared\",
+                  \"cpus\": 1,
+                  \"memory_mb\": 256
+                }
+              }
+            }"
 
       - name: Run crawler for Meteor
         env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          IMAGE_REF: ${{ steps.image.outputs.ref }}
         run: |
-          yes | flyctl machine run . \
-            --app mirapri-stats \
-            --org phantoml4rd \
-            --region nrt \
-            --dockerfile apps/scraper/Dockerfile \
-            --config apps/scraper/fly.toml \
-            --rm \
-            --detach \
-            -- --dc Meteor
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${FLY_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "${FLY_API_HOSTNAME}/v1/apps/${APP_NAME}/machines" \
+            -d "{
+              \"name\": \"crawler-meteor-$(date +%s)\",
+              \"region\": \"nrt\",
+              \"config\": {
+                \"image\": \"${IMAGE_REF}\",
+                \"init\": {
+                  \"exec\": [\"node\", \"dist/crawler-cli.js\", \"--dc\", \"Meteor\"]
+                },
+                \"auto_destroy\": true,
+                \"restart\": {
+                  \"policy\": \"no\"
+                },
+                \"guest\": {
+                  \"cpu_kind\": \"shared\",
+                  \"cpus\": 1,
+                  \"memory_mb\": 256
+                }
+              }
+            }"
