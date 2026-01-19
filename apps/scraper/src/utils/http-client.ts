@@ -1,4 +1,4 @@
-import type { HTTPResult } from '@mirapuri/shared';
+import type { HTTPResult } from '@mirapri/shared';
 
 /**
  * デフォルトのレート制限間隔（ミリ秒）

@@ -1,5 +1,5 @@
-import type { GlamourData } from '@mirapuri/shared';
-import { SLOT_MAPPING } from '@mirapuri/shared';
+import type { GlamourData } from '@mirapri/shared';
+import { SLOT_MAPPING } from '@mirapri/shared';
 import * as cheerio from 'cheerio';
 
 /**

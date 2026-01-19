@@ -1,5 +1,5 @@
 {
-  "name": "@mirapuri/scraper",
+  "name": "@mirapri/scraper",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -16,7 +16,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@mirapuri/shared": "workspace:*",
+    "@mirapri/shared": "workspace:*",
     "cheerio": "^1.0.0",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.38.3",

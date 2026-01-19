@@ -1,5 +1,5 @@
 {
-  "name": "@mirapuri/writer",
+  "name": "@mirapri/writer",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -11,7 +11,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@mirapuri/shared": "workspace:*",
+    "@mirapri/shared": "workspace:*",
     "drizzle-orm": "^0.38.3",
     "hono": "^4.7.5"
   },

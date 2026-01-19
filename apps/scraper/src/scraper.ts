@@ -1,4 +1,4 @@
-import type { ScraperError, ScraperResult } from '@mirapuri/shared';
+import type { ScraperError, ScraperResult } from '@mirapri/shared';
 import { isOptedOut, parseGlamourData } from './parsers/character-page.js';
 import type { GlamourRepository } from './repository.js';
 import type { HttpClient } from './utils/http-client.js';

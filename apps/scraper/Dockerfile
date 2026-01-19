@@ -36,8 +36,8 @@ COPY apps/scraper ./apps/scraper
 COPY tsconfig.base.json ./
 
 # Build shared package and bundle crawler
-RUN pnpm --filter @mirapuri/shared build && \
-    pnpm --filter @mirapuri/scraper build:crawler
+RUN pnpm --filter @mirapri/shared build && \
+    pnpm --filter @mirapri/scraper build:crawler
 
 # ============================================
 # Production stage: Minimal runtime

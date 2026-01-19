@@ -1,4 +1,4 @@
-name = "mirapuri-writer"
+name = "mirapri-writer"
 main = "src/index.ts"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
@@ -12,5 +12,5 @@ invocation_logs = true
 
 [[d1_databases]]
 binding = "DB"
-database_name = "mirapuri-stats"
-database_id = "29e5b239-799f-4080-8cde-7cd2e9fff19c"
+database_name = "mirapri-stats"
+database_id = "82263b1f-51f8-4c5c-a611-9afc70dea99d"

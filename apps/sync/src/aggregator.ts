@@ -1,5 +1,5 @@
-import { charactersGlamour, crawlProgress, itemsCache } from '@mirapuri/shared';
-import type * as schema from '@mirapuri/shared/schema';
+import { charactersGlamour, crawlProgress, itemsCache } from '@mirapri/shared';
+import type * as schema from '@mirapri/shared/schema';
 import { count, notInArray, sql } from 'drizzle-orm';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import type { AggregatedPair, AggregatedUsage, ExtractedItem } from './types.js';

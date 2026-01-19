@@ -1,4 +1,4 @@
-# Fly.io Machine configuration for mirapuri crawler
+# Fly.io Machine configuration for mirapri crawler
 #
 # Build image (from repo root):
 #   flyctl deploy --build-only --push --dockerfile apps/scraper/Dockerfile --config apps/scraper/fly.toml
@@ -9,7 +9,7 @@
 # Examples:
 #   fly machine run . --dockerfile apps/scraper/Dockerfile --config apps/scraper/fly.toml -- --dc Gaia
 
-app = "mirapuri-stats"
+app = "mirapri-stats"
 primary_region = "nrt"  # Tokyo
 
 # Machine resources

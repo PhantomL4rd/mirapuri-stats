@@ -1,5 +1,5 @@
-import type { GlamourData } from '@mirapuri/shared';
-import type { Database } from '@mirapuri/shared/db';
+import type { GlamourData } from '@mirapri/shared';
+import type { Database } from '@mirapri/shared/db';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRepository, type GlamourRepository } from './repository.js';
 

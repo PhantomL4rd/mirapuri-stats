@@ -1,4 +1,4 @@
-import { meta, pairs, usage } from '@mirapuri/shared/d1-schema';
+import { meta, pairs, usage } from '@mirapri/shared/d1-schema';
 import { eq, notInArray } from 'drizzle-orm';
 import type { DrizzleD1Database } from 'drizzle-orm/d1';
 

@@ -14,7 +14,7 @@ importers:
 
   apps/scraper:
     dependencies:
-      '@mirapuri/shared':
+      '@mirapri/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       cheerio:
@@ -48,7 +48,7 @@ importers:
 
   apps/sync:
     dependencies:
-      '@mirapuri/shared':
+      '@mirapri/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       commander:
@@ -128,7 +128,7 @@ importers:
 
   apps/writer:
     dependencies:
-      '@mirapuri/shared':
+      '@mirapri/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       drizzle-orm:

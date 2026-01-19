@@ -1,5 +1,5 @@
-import type { Database } from '@mirapuri/shared/db';
-import { crawlProgress } from '@mirapuri/shared/schema';
+import type { Database } from '@mirapri/shared/db';
+import { crawlProgress } from '@mirapri/shared/schema';
 import { eq } from 'drizzle-orm';
 
 /** 終了理由 */

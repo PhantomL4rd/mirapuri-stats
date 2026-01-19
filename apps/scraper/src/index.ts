@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { createDb } from '@mirapuri/shared';
+import { createDb } from '@mirapri/shared';
 import { createGlamourRepository } from './repository.js';
 import { createScraper } from './scraper.js';
 import { createHttpClient } from './utils/http-client.js';

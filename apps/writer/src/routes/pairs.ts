@@ -1,4 +1,4 @@
-import { pairs } from '@mirapuri/shared/d1-schema';
+import { pairs } from '@mirapri/shared/d1-schema';
 import { drizzle } from 'drizzle-orm/d1';
 import { Hono } from 'hono';
 import type { Env, PairsRequest, PairsResponse } from '../types.js';

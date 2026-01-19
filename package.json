@@ -1,20 +1,20 @@
 {
-  "name": "mirapuri-stats",
+  "name": "mirapri-stats",
   "version": "0.0.1",
   "private": true,
   "description": "FF14 glamour combination statistics tool",
   "type": "module",
   "scripts": {
-    "dev:scraper": "pnpm --filter @mirapuri/scraper dev",
-    "build:scraper": "pnpm --filter @mirapuri/scraper build",
+    "dev:scraper": "pnpm --filter @mirapri/scraper dev",
+    "build:scraper": "pnpm --filter @mirapri/scraper build",
     "test": "pnpm -r test",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
     "typecheck": "pnpm -r typecheck",
-    "migrate:writer": "pnpm -F @mirapuri/writer exec wrangler d1 migrations apply mirapuri-stats --remote",
-    "db:generate": "pnpm -F @mirapuri/shared run db:generate",
-    "db:push": "pnpm -F @mirapuri/shared run db:push"
+    "migrate:writer": "pnpm -F @mirapri/writer exec wrangler d1 migrations apply mirapri-stats --remote",
+    "db:generate": "pnpm -F @mirapri/shared run db:generate",
+    "db:push": "pnpm -F @mirapri/shared run db:push"
   },
   "engines": {
     "node": ">=24.0.0",

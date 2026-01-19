@@ -1,4 +1,4 @@
-import type { Database } from '@mirapuri/shared/db';
+import type { Database } from '@mirapri/shared/db';
 import type { Scraper } from '../scraper';
 import type { CharacterListFetcher } from './character-list-fetcher';
 import { loadProgress, saveProgress } from './progress';

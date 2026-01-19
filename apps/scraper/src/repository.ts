@@ -1,6 +1,6 @@
-import type { GlamourData, RepositoryResult } from '@mirapuri/shared';
-import type { Database } from '@mirapuri/shared/db';
-import { charactersGlamour, itemsCache, SLOT_IDS } from '@mirapuri/shared/schema';
+import type { GlamourData, RepositoryResult } from '@mirapri/shared';
+import type { Database } from '@mirapri/shared/db';
+import { charactersGlamour, itemsCache, SLOT_IDS } from '@mirapri/shared/schema';
 import { eq } from 'drizzle-orm';
 import { logger } from './utils/logger.js';
 

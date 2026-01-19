@@ -1,4 +1,4 @@
-import type { GlamourData } from '@mirapuri/shared';
+import type { GlamourData } from '@mirapri/shared';
 import { describe, expect, it } from 'vitest';
 import { isOptedOut, OPT_OUT_TAG, parseGlamourData, parseProfile } from './character-page.js';
 

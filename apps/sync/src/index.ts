@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { createDb } from '@mirapuri/shared';
+import { createDb } from '@mirapri/shared';
 import { Command } from 'commander';
 import { createAggregator } from './aggregator.js';
 import { formatProgress, runSync } from './sync-runner.js';

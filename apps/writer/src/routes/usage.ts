@@ -1,4 +1,4 @@
-import { usage } from '@mirapuri/shared/d1-schema';
+import { usage } from '@mirapri/shared/d1-schema';
 import { drizzle } from 'drizzle-orm/d1';
 import { Hono } from 'hono';
 import type { Env, UsageRequest, UsageResponse } from '../types.js';

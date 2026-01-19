@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import 'dotenv/config';
-import { createDb } from '@mirapuri/shared/db';
+import { createDb } from '@mirapri/shared/db';
 import type { SearchKey } from './crawler';
 import {
   createCharacterListFetcher,

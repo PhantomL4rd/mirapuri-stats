@@ -1,4 +1,4 @@
-import { meta } from '@mirapuri/shared/d1-schema';
+import { meta } from '@mirapri/shared/d1-schema';
 import { drizzle } from 'drizzle-orm/d1';
 import { Hono } from 'hono';
 import type {
