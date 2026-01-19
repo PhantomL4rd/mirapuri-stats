@@ -55,3 +55,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Lodestone ツールチップ */
+#eorzeadb_tooltip {
+  z-index: 9999 !important;
+}
