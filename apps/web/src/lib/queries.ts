@@ -113,7 +113,7 @@ export interface PartnerItem {
 export async function getPartnerItems(
   db: D1Database,
   itemId: string,
-  limit = 20,
+  limit = 10,
 ): Promise<PartnerItem[]> {
   const version = await getActiveVersion(db);
 
