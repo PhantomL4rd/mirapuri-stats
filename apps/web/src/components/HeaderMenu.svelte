@@ -54,7 +54,7 @@
         <SwatchBook class="size-5" />
         カララントピッカー
       </a>
-      <a href="https://jp.finalfantasyxiv.com/lodestone/character/27344914/blog/<blog_id>/"
+      <a href="https://jp.finalfantasyxiv.com/lodestone/character/27344914/blog/5649674/"
         target="_blank"
         rel="noopener noreferrer"
         class="flex items-center gap-3 rounded-md px-3 py-3 text-sm hover:bg-accent transition-colors"
