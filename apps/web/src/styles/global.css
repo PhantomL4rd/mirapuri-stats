@@ -57,6 +57,7 @@
 }
 
 /* Lodestone ツールチップ */
-#eorzeadb_tooltip {
-  z-index: 9999 !important;
+#eorzeadb_tooltip {                                                                                                                                                         
+    position: fixed !important;                                                                                                                                               
+    z-index: 9999 !important;                                                                                                                                                 
 }
