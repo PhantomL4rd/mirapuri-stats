@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Menu, MessageCircle, SwatchBook, X, Search } from 'lucide-svelte';
+  import { Menu, MessageCircle, SwatchBook, X, Search, Info } from 'lucide-svelte';
   import { cn } from '../lib/utils';
 
   interface SearchResult {
@@ -212,6 +212,14 @@
     </div>
 
     <nav class="p-2">
+      <a
+        href="/readme"
+        class="flex items-center gap-3 rounded-md px-3 py-3 text-sm hover:bg-accent transition-colors"
+        onclick={closeMenu}
+      >
+        <Info class="size-5" />
+        このサイトについて
+      </a>
       <p class="px-3 py-2 text-xs text-muted-foreground">外部リンク</p>
       <a
         href="https://colorant-picker.pl4rd.com"
