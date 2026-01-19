@@ -169,3 +169,72 @@ export async function getDataFreshness(db: D1Database): Promise<DataFreshness> {
     dataTo: map.get('data_to') ?? null,
   };
 }
+
+/**
+ * 検索結果アイテム
+ */
+export interface SearchResultItem {
+  itemId: string;
+  itemName: string;
+  slotId: number;
+}
+
+/**
+ * ひらがなをカタカナに変換
+ */
+function hiraganaToKatakana(str: string): string {
+  return str.replace(/[\u3041-\u3096]/g, (char) =>
+    String.fromCharCode(char.charCodeAt(0) + 0x60),
+  );
+}
+
+/**
+ * アイテム名で部分一致検索
+ * pairsテーブルにデータがあるアイテムのみ、usage_count順で返す
+ * ひらがな入力時はカタカナでも検索
+ * @param db D1Database
+ * @param query 検索クエリ
+ * @param limit 最大件数
+ */
+export async function searchItems(
+  db: D1Database,
+  query: string,
+  limit = 10,
+): Promise<SearchResultItem[]> {
+  if (!query || query.length < 1) {
+    return [];
+  }
+
+  const version = await getActiveVersion(db);
+  const likePattern = `%${query}%`;
+  const katakanaQuery = hiraganaToKatakana(query);
+  const katakanaPattern = `%${katakanaQuery}%`;
+
+  // ひらがなとカタカナ両方で検索（同じ場合は1つのみ）
+  const whereClause =
+    query === katakanaQuery ? 'i.name LIKE ?' : '(i.name LIKE ? OR i.name LIKE ?)';
+
+  const bindings =
+    query === katakanaQuery
+      ? [version, version, likePattern, limit]
+      : [version, version, likePattern, katakanaPattern, limit];
+
+  const result = await db
+    .prepare(
+      `SELECT DISTINCT i.id, i.name, i.slot_id, u.usage_count
+       FROM items i
+       INNER JOIN pairs p ON i.id = p.base_item_id AND p.version = ?
+       INNER JOIN usage u ON i.id = u.item_id AND u.version = ?
+       WHERE ${whereClause}
+       ORDER BY u.usage_count DESC
+       LIMIT ?`,
+    )
+    .bind(...bindings)
+    .all<{ id: string; name: string; slot_id: number; usage_count: number }>();
+
+  return (result.results ?? []).map((row) => ({
+    itemId: row.id,
+    itemName: row.name,
+    slotId: row.slot_id,
+  }));
+}

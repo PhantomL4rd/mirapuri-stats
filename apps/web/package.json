@@ -6,6 +6,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "wrangler pages dev dist",
+    "preview:remote": "wrangler pages dev dist --remote",
     "typecheck": "astro check && tsc --noEmit"
   },
   "dependencies": {
