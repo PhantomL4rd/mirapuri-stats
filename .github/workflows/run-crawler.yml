@@ -20,21 +20,25 @@ jobs:
           version: latest
 
       - name: Build and push image
+        id: build
         run: |
-          flyctl deploy --build-only --push \
+          OUTPUT=$(flyctl deploy --build-only --push \
             --app $APP_NAME \
             --dockerfile apps/scraper/Dockerfile \
-            --config apps/scraper/fly.toml
-
-      - name: Get image ref
-        id: image
-        run: |
-          IMAGE_REF="registry.fly.io/${APP_NAME}:deployment-$(git rev-parse --short HEAD)"
+            --config apps/scraper/fly.toml 2>&1)
+          echo "$OUTPUT"
+          # Extract image ref from output
+          IMAGE_REF=$(echo "$OUTPUT" | grep -oE 'registry\.fly\.io/[^[:space:]]+' | head -1)
+          if [ -z "$IMAGE_REF" ]; then
+            echo "Failed to extract image ref"
+            exit 1
+          fi
           echo "ref=$IMAGE_REF" >> $GITHUB_OUTPUT
+          echo "Image ref: $IMAGE_REF"
 
       - name: Run crawler for Gaia
         env:
-          IMAGE_REF: ${{ steps.image.outputs.ref }}
+          IMAGE_REF: ${{ steps.build.outputs.ref }}
         run: |
           curl -sS -X POST \
             -H "Authorization: Bearer ${FLY_API_TOKEN}" \
@@ -62,7 +66,7 @@ jobs:
 
       - name: Run crawler for Mana
         env:
-          IMAGE_REF: ${{ steps.image.outputs.ref }}
+          IMAGE_REF: ${{ steps.build.outputs.ref }}
         run: |
           curl -sS -X POST \
             -H "Authorization: Bearer ${FLY_API_TOKEN}" \
@@ -90,7 +94,7 @@ jobs:
 
       - name: Run crawler for Elemental
         env:
-          IMAGE_REF: ${{ steps.image.outputs.ref }}
+          IMAGE_REF: ${{ steps.build.outputs.ref }}
         run: |
           curl -sS -X POST \
             -H "Authorization: Bearer ${FLY_API_TOKEN}" \
@@ -118,7 +122,7 @@ jobs:
 
       - name: Run crawler for Meteor
         env:
-          IMAGE_REF: ${{ steps.image.outputs.ref }}
+          IMAGE_REF: ${{ steps.build.outputs.ref }}
         run: |
           curl -sS -X POST \
             -H "Authorization: Bearer ${FLY_API_TOKEN}" \
