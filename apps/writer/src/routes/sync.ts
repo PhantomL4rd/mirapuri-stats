@@ -1,4 +1,3 @@
-import { meta } from '@mirapri/shared/d1-schema';
 import { drizzle } from 'drizzle-orm/d1';
 import { Hono } from 'hono';
 import type {
@@ -47,28 +46,13 @@ syncRoute.post('/commit', async (c) => {
 
   const previousVersion = await vm.getActiveVersion();
 
-  await vm.commitSync(body.version);
-  await vm.cleanupOldVersions(previousVersion);
-
-  // データ取得期間を meta に保存
-  if (body.dataFrom) {
-    await db
-      .insert(meta)
-      .values({ key: 'data_from', value: body.dataFrom })
-      .onConflictDoUpdate({
-        target: meta.key,
-        set: { value: body.dataFrom },
-      });
-  }
-  if (body.dataTo) {
-    await db
-      .insert(meta)
-      .values({ key: 'data_to', value: body.dataTo })
-      .onConflictDoUpdate({
-        target: meta.key,
-        set: { value: body.dataTo },
-      });
-  }
+  // sync_versions テーブルに freshness 情報と共に保存
+  await vm.commitSync({
+    version: body.version,
+    dataFrom: body.dataFrom,
+    dataTo: body.dataTo,
+  });
+  await vm.cleanupOldVersions();
 
   const response: SyncCommitResponse = {
     success: true,

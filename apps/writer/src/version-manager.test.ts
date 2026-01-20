@@ -63,22 +63,51 @@ describe('VersionManager', () => {
   });
 
   describe('commitSync', () => {
-    it('meta.active_version を更新する', async () => {
-      const mockValues = vi.fn().mockResolvedValue(undefined);
-      const mockOnConflictDoUpdate = vi.fn(() => ({ values: mockValues }));
+    it('meta.active_version を更新し、sync_versions に登録する', async () => {
+      const mockOnConflictDoUpdate = vi.fn().mockResolvedValue(undefined);
+      const mockInsertValues = vi.fn(() => ({
+        onConflictDoUpdate: mockOnConflictDoUpdate,
+      }));
+      const mockSyncVersionsInsertValues = vi.fn().mockResolvedValue(undefined);
+      const mockInsert = vi
+        .fn()
+        .mockReturnValueOnce({ values: mockInsertValues }) // meta へのinsert
+        .mockReturnValueOnce({ values: mockSyncVersionsInsertValues }); // sync_versions へのinsert
+
       const mockDb = {
-        insert: vi.fn(() => ({
-          values: vi.fn(() => ({
-            onConflictDoUpdate: mockOnConflictDoUpdate,
-          })),
-        })),
+        insert: mockInsert,
       } as unknown as VersionManagerDependencies['db'];
 
       const vm = createVersionManager({ db: mockDb });
-      await vm.commitSync('new-version-123');
+      await vm.commitSync({
+        version: 'new-version-123',
+        dataFrom: '2024-01-01T00:00:00Z',
+        dataTo: '2024-01-07T00:00:00Z',
+      });
 
-      expect(mockDb.insert).toHaveBeenCalled();
+      expect(mockInsert).toHaveBeenCalledTimes(2);
       expect(mockOnConflictDoUpdate).toHaveBeenCalled();
+    });
+
+    it('freshness が undefined でも動作する', async () => {
+      const mockOnConflictDoUpdate = vi.fn().mockResolvedValue(undefined);
+      const mockInsertValues = vi.fn(() => ({
+        onConflictDoUpdate: mockOnConflictDoUpdate,
+      }));
+      const mockSyncVersionsInsertValues = vi.fn().mockResolvedValue(undefined);
+      const mockInsert = vi
+        .fn()
+        .mockReturnValueOnce({ values: mockInsertValues })
+        .mockReturnValueOnce({ values: mockSyncVersionsInsertValues });
+
+      const mockDb = {
+        insert: mockInsert,
+      } as unknown as VersionManagerDependencies['db'];
+
+      const vm = createVersionManager({ db: mockDb });
+      await vm.commitSync({ version: 'new-version-456' });
+
+      expect(mockInsert).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -100,24 +129,19 @@ describe('VersionManager', () => {
   });
 
   describe('cleanupOldVersions', () => {
-    it('現在バージョン以外の古いデータを削除する（2世代保持）', async () => {
-      // active_version を取得
-      const mockGet = vi.fn().mockResolvedValue({ value: 'current-version' });
-      const mockWhere = vi.fn(() => ({ get: mockGet }));
-      const mockSelectFrom = vi.fn(() => ({ where: mockWhere }));
-      const mockSelect = vi.fn(() => ({ from: mockSelectFrom }));
-
-      // distinct versions を取得（3件: current, prev, old）
+    it('3世代を超えるバージョンを削除する', async () => {
+      // sync_versions から全バージョン取得（4件: v1, v2, v3, v4 - synced_at 降順）
       const mockAll = vi
         .fn()
         .mockResolvedValue([
-          { version: 'current-version' },
-          { version: 'prev-version' },
-          { version: 'old-version' },
+          { version: 'v4-newest' },
+          { version: 'v3' },
+          { version: 'v2' },
+          { version: 'v1-oldest' },
         ]);
-      const mockSelectDistinct = vi.fn(() => ({
-        from: vi.fn(() => ({ all: mockAll })),
-      }));
+      const mockOrderBy = vi.fn(() => ({ all: mockAll }));
+      const mockSelectFrom = vi.fn(() => ({ orderBy: mockOrderBy }));
+      const mockSelect = vi.fn(() => ({ from: mockSelectFrom }));
 
       const mockDelete = vi.fn(() => ({
         where: vi.fn().mockResolvedValue(undefined),
@@ -125,41 +149,52 @@ describe('VersionManager', () => {
 
       const mockDb = {
         select: mockSelect,
-        selectDistinct: mockSelectDistinct,
         delete: mockDelete,
       } as unknown as VersionManagerDependencies['db'];
 
       const vm = createVersionManager({ db: mockDb });
-      await vm.cleanupOldVersions('prev-version');
+      await vm.cleanupOldVersions();
 
-      // old-version のデータが削除される（usage + pairs = 2回）
-      expect(mockDelete).toHaveBeenCalledTimes(2);
+      // v1-oldest のデータが削除される（usage + pairs + sync_versions = 3回）
+      expect(mockDelete).toHaveBeenCalledTimes(3);
     });
 
-    it('2世代以内なら削除しない', async () => {
-      const mockGet = vi.fn().mockResolvedValue({ value: 'current-version' });
-      const mockWhere = vi.fn(() => ({ get: mockGet }));
-      const mockSelectFrom = vi.fn(() => ({ where: mockWhere }));
-      const mockSelect = vi.fn(() => ({ from: mockSelectFrom }));
-
-      // distinct versions を取得（2件のみ: current, prev）
+    it('3世代以内なら削除しない', async () => {
       const mockAll = vi
         .fn()
-        .mockResolvedValue([{ version: 'current-version' }, { version: 'prev-version' }]);
-      const mockSelectDistinct = vi.fn(() => ({
-        from: vi.fn(() => ({ all: mockAll })),
-      }));
+        .mockResolvedValue([{ version: 'v3' }, { version: 'v2' }, { version: 'v1' }]);
+      const mockOrderBy = vi.fn(() => ({ all: mockAll }));
+      const mockSelectFrom = vi.fn(() => ({ orderBy: mockOrderBy }));
+      const mockSelect = vi.fn(() => ({ from: mockSelectFrom }));
 
       const mockDelete = vi.fn();
 
       const mockDb = {
         select: mockSelect,
-        selectDistinct: mockSelectDistinct,
         delete: mockDelete,
       } as unknown as VersionManagerDependencies['db'];
 
       const vm = createVersionManager({ db: mockDb });
-      await vm.cleanupOldVersions('prev-version');
+      await vm.cleanupOldVersions();
+
+      expect(mockDelete).not.toHaveBeenCalled();
+    });
+
+    it('2世代以内でも削除しない', async () => {
+      const mockAll = vi.fn().mockResolvedValue([{ version: 'v2' }, { version: 'v1' }]);
+      const mockOrderBy = vi.fn(() => ({ all: mockAll }));
+      const mockSelectFrom = vi.fn(() => ({ orderBy: mockOrderBy }));
+      const mockSelect = vi.fn(() => ({ from: mockSelectFrom }));
+
+      const mockDelete = vi.fn();
+
+      const mockDb = {
+        select: mockSelect,
+        delete: mockDelete,
+      } as unknown as VersionManagerDependencies['db'];
+
+      const vm = createVersionManager({ db: mockDb });
+      await vm.cleanupOldVersions();
 
       expect(mockDelete).not.toHaveBeenCalled();
     });

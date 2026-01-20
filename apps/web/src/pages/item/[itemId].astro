@@ -2,8 +2,8 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PrivacyRibbon from '../../components/PrivacyRibbon.astro';
 import { ArrowLeft } from 'lucide-svelte';
-import { getItemInfo, getPartnerItems, getDataFreshness } from '../../lib/queries';
-import { SLOT_NAMES } from '../../lib/db';
+import { getItemInfo, getPartnerItems } from '../../lib/queries';
+import { SLOT_NAMES, getQueryVersion, getAvailableVersions } from '../../lib/db';
 
 const { itemId } = Astro.params;
 
@@ -11,12 +11,19 @@ if (!itemId) {
   return Astro.redirect('/');
 }
 
+// クエリパラメータからバージョンを取得
+const url = new URL(Astro.request.url);
+const versionParam = url.searchParams.get('version');
+
 const db = Astro.locals.runtime.env.DB;
 
-const [itemInfo, partnerItems, freshness] = await Promise.all([
+// バージョン一覧を取得し、リクエストされたバージョンを検証
+const versions = await getAvailableVersions(db);
+const currentVersion = await getQueryVersion(db, versionParam);
+
+const [itemInfo, partnerItems] = await Promise.all([
   getItemInfo(db, itemId),
-  getPartnerItems(db, itemId, 10),
-  getDataFreshness(db),
+  getPartnerItems(db, itemId, 10, currentVersion),
 ]);
 
 if (!itemInfo) {
@@ -44,7 +51,11 @@ function getLodestoneUrl(id: string): string {
 }
 ---
 
-<BaseLayout title={`${itemInfo.itemName}のベストマッチ | ミラプリインサイト`} freshness={freshness}>
+<BaseLayout
+  title={`${itemInfo.itemName}のベストマッチ | ミラプリインサイト`}
+  versions={versions}
+  currentVersion={currentVersion}
+>
   <PrivacyRibbon slot="ribbon" />
 
   <div class="space-y-6">

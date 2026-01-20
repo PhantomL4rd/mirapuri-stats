@@ -110,3 +110,24 @@ export type Pairs = typeof pairs.$inferSelect;
 
 /** INSERT時の型 */
 export type NewPairs = typeof pairs.$inferInsert;
+
+/**
+ * Sync バージョン管理テーブル
+ * 各バージョンの freshness（データ期間）を保存
+ */
+export const syncVersions = sqliteTable('sync_versions', {
+  /** バージョン識別子（UUID） */
+  version: text('version').primaryKey(),
+  /** データ取得期間（開始）ISO8601 */
+  dataFrom: text('data_from'),
+  /** データ取得期間（終了）ISO8601 */
+  dataTo: text('data_to'),
+  /** Sync完了日時 ISO8601 */
+  syncedAt: text('synced_at').notNull(),
+});
+
+/** SELECT時の型 */
+export type SyncVersion = typeof syncVersions.$inferSelect;
+
+/** INSERT時の型 */
+export type NewSyncVersion = typeof syncVersions.$inferInsert;

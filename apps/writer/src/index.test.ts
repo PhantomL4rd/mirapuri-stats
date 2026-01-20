@@ -17,6 +17,9 @@ async function runMigrations(db: D1Database) {
     db.prepare(
       `CREATE TABLE IF NOT EXISTS pairs (version TEXT NOT NULL, base_slot_id INTEGER NOT NULL CHECK (base_slot_id BETWEEN 1 AND 5), partner_slot_id INTEGER NOT NULL CHECK (partner_slot_id BETWEEN 1 AND 5), base_item_id TEXT NOT NULL, partner_item_id TEXT NOT NULL, pair_count INTEGER NOT NULL DEFAULT 0, rank INTEGER NOT NULL, PRIMARY KEY (version, base_slot_id, partner_slot_id, base_item_id, rank))`,
     ),
+    db.prepare(
+      `CREATE TABLE IF NOT EXISTS sync_versions (version TEXT PRIMARY KEY, data_from TEXT, data_to TEXT, synced_at TEXT NOT NULL)`,
+    ),
   ]);
 }
 

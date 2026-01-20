@@ -2,27 +2,22 @@
 import '../styles/global.css';
 import { TrendingUp } from 'lucide-svelte';
 import HeaderMenu from '../components/HeaderMenu.svelte';
-import type { DataFreshness } from '../lib/queries';
+import VersionSelector from '../components/VersionSelector.svelte';
+import type { VersionInfo } from '../lib/db';
 
 interface Props {
   title?: string;
   description?: string;
-  freshness?: DataFreshness;
+  versions?: VersionInfo[];
+  currentVersion?: string;
 }
 
-const { title = 'ミラプリインサイト', description = 'FF14プレイヤーのミラプリ傾向を集計・可視化', freshness } =
-  Astro.props;
-
-function formatDateSlash(dateStr: string | null): string {
-  if (!dateStr) return '';
-  const date = new Date(dateStr);
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}/${m}/${d}`;
-}
-
-const showFreshness = freshness?.dataFrom && freshness?.dataTo;
+const {
+  title = 'ミラプリインサイト',
+  description = 'FF14プレイヤーのミラプリ傾向を集計・可視化',
+  versions = [],
+  currentVersion = '',
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -78,9 +73,9 @@ const showFreshness = freshness?.dataFrom && freshness?.dataTo;
     </main>
 
     <footer class="border-t bg-card pt-4">
-      {showFreshness && (
-        <div class="mx-auto max-w-4xl px-4 pb-2 text-center text-xs text-muted-foreground">
-          統計期間: {formatDateSlash(freshness!.dataFrom)} - {formatDateSlash(freshness!.dataTo)}
+      {versions.length > 0 && (
+        <div class="mx-auto max-w-4xl px-4 pb-2 flex justify-center">
+          <VersionSelector versions={versions} currentVersion={currentVersion} client:load />
         </div>
       )}
       <div class="mx-auto max-w-4xl px-4 pb-4 text-center text-xs text-muted-foreground">

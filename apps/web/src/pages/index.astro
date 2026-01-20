@@ -3,31 +3,35 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import PrivacyRibbon from '../components/PrivacyRibbon.astro';
 import SlotTabs from '../components/SlotTabs.svelte';
 import VersatilityRanking from '../components/VersatilityRanking.astro';
-import { getVersatilityRanking, getDataFreshness } from '../lib/queries';
-import { SLOT_IDS } from '../lib/db';
+import { getVersatilityRanking } from '../lib/queries';
+import { SLOT_IDS, getQueryVersion, getAvailableVersions } from '../lib/db';
 
-// クエリパラメータからスロットを取得（デフォルト: body = 胴）
+// クエリパラメータからスロットとバージョンを取得
 const url = new URL(Astro.request.url);
 const slotParam = url.searchParams.get('slot') ?? 'body';
+const versionParam = url.searchParams.get('version');
 const currentSlot = slotParam as keyof typeof SLOT_IDS;
 const slotId = SLOT_IDS[currentSlot] ?? 2;
 
 // D1からデータ取得
 const db = Astro.locals.runtime.env.DB;
 let items: Awaited<ReturnType<typeof getVersatilityRanking>> = [];
-let freshness: Awaited<ReturnType<typeof getDataFreshness>> = { dataFrom: null, dataTo: null };
+let versions: Awaited<ReturnType<typeof getAvailableVersions>> = [];
+let currentVersion = '';
 
 try {
-  [items, freshness] = await Promise.all([
-    getVersatilityRanking(db, slotId, 10),
-    getDataFreshness(db),
-  ]);
+  // バージョン一覧を取得し、リクエストされたバージョンを検証
+  versions = await getAvailableVersions(db);
+  currentVersion = await getQueryVersion(db, versionParam);
+
+  // 指定バージョンでデータ取得
+  items = await getVersatilityRanking(db, slotId, 10, currentVersion);
 } catch (e) {
   console.error('D1 query error:', e);
 }
 ---
 
-<BaseLayout title={`ミラプリインサイト`} freshness={freshness}>
+<BaseLayout title={`ミラプリインサイト`} versions={versions} currentVersion={currentVersion}>
   <PrivacyRibbon slot="ribbon" />
 
   <div class="space-y-6">

@@ -19,17 +19,19 @@ export interface VersatilityItem {
  * @param db D1Database
  * @param slotId フィルタするスロットID（1-5）、nullで全スロット
  * @param limit 取得件数
+ * @param version バージョン（省略時は active_version）
  */
 export async function getVersatilityRanking(
   db: D1Database,
-  slotId: number | null = 2, // デフォルト: 胴
+  slotId: number | null = 2,
   limit = 10,
+  version?: string,
 ): Promise<VersatilityItem[]> {
-  const version = await getActiveVersion(db);
+  const v = version ?? (await getActiveVersion(db));
 
   // スロットフィルタの条件
   const slotCondition = slotId !== null ? 'AND u.slot_id = ?' : '';
-  const bindings = slotId !== null ? [version, version, slotId, limit] : [version, version, limit];
+  const bindings = slotId !== null ? [v, v, slotId, limit] : [v, v, limit];
 
   const query = `
     SELECT
@@ -109,13 +111,19 @@ export interface PartnerItem {
 
 /**
  * 指定アイテムの相方装備ランキングを取得
+ *
+ * @param db D1Database
+ * @param itemId アイテムID
+ * @param limit 取得件数
+ * @param version バージョン（省略時は active_version）
  */
 export async function getPartnerItems(
   db: D1Database,
   itemId: string,
   limit = 10,
+  version?: string,
 ): Promise<PartnerItem[]> {
-  const version = await getActiveVersion(db);
+  const v = version ?? (await getActiveVersion(db));
 
   const query = `
     SELECT
@@ -131,7 +139,7 @@ export async function getPartnerItems(
     LIMIT ?
   `;
 
-  const result = await db.prepare(query).bind(version, itemId, limit).all<{
+  const result = await db.prepare(query).bind(v, itemId, limit).all<{
     item_id: string;
     item_name: string;
     slot_id: number;
@@ -155,18 +163,22 @@ export interface DataFreshness {
 }
 
 /**
- * データ鮮度を取得（meta テーブルから）
+ * データ鮮度を取得（sync_versions テーブルから）
+ *
+ * @param db D1Database
+ * @param version バージョン（省略時は active_version）
  */
-export async function getDataFreshness(db: D1Database): Promise<DataFreshness> {
-  const result = await db
-    .prepare("SELECT key, value FROM meta WHERE key IN ('data_from', 'data_to')")
-    .all<{ key: string; value: string }>();
+export async function getDataFreshness(db: D1Database, version?: string): Promise<DataFreshness> {
+  const v = version ?? (await getActiveVersion(db));
 
-  const map = new Map(result.results?.map((r) => [r.key, r.value]));
+  const result = await db
+    .prepare('SELECT data_from, data_to FROM sync_versions WHERE version = ?')
+    .bind(v)
+    .first<{ data_from: string | null; data_to: string | null }>();
 
   return {
-    dataFrom: map.get('data_from') ?? null,
-    dataTo: map.get('data_to') ?? null,
+    dataFrom: result?.data_from ?? null,
+    dataTo: result?.data_to ?? null,
   };
 }
 
@@ -190,20 +202,23 @@ function hiraganaToKatakana(str: string): string {
  * アイテム名で部分一致検索
  * pairsテーブルにデータがあるアイテムのみ、usage_count順で返す
  * ひらがな入力時はカタカナでも検索
+ *
  * @param db D1Database
  * @param query 検索クエリ
  * @param limit 最大件数
+ * @param version バージョン（省略時は active_version）
  */
 export async function searchItems(
   db: D1Database,
   query: string,
   limit = 10,
+  version?: string,
 ): Promise<SearchResultItem[]> {
   if (!query || query.length < 1) {
     return [];
   }
 
-  const version = await getActiveVersion(db);
+  const v = version ?? (await getActiveVersion(db));
   const likePattern = `%${query}%`;
   const katakanaQuery = hiraganaToKatakana(query);
   const katakanaPattern = `%${katakanaQuery}%`;
@@ -214,8 +229,8 @@ export async function searchItems(
 
   const bindings =
     query === katakanaQuery
-      ? [version, version, likePattern, limit]
-      : [version, version, likePattern, katakanaPattern, limit];
+      ? [v, v, likePattern, limit]
+      : [v, v, likePattern, katakanaPattern, limit];
 
   const result = await db
     .prepare(
