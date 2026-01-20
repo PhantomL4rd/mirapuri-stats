@@ -141,16 +141,23 @@ function getLodestoneUrl(id: string): string {
     link?.addEventListener('click', (e) => {
       e.preventDefault();
 
-      // Lodestoneスクリプトが読み込んだjQueryとeorzeadbを使う
+      // Lodestoneスクリプトが読み込んだjQueryを使う
       const $ = (window as any).jQuery;
+      if (!$) {
+        console.log('jQuery not loaded');
+        return;
+      }
+
       const edb = (window as any).eorzeadb;
-      if (!$ || !edb) return;
+      console.log('eorzeadb:', edb);
+      console.log('tooltipVisible:', tooltipVisible);
 
       if (!tooltipVisible) {
-        edb.show_tooltip($(link));
+        // jQueryのtriggerでmouseenterを発火
+        $(link).trigger('mouseenter');
         tooltipVisible = true;
       } else {
-        edb.hide_tooltip();
+        $(link).trigger('mouseleave');
         tooltipVisible = false;
       }
     });
