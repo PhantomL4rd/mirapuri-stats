@@ -140,13 +140,17 @@ function getLodestoneUrl(id: string): string {
 
     link?.addEventListener('click', (e) => {
       e.preventDefault();
+
+      // Lodestoneスクリプトが読み込んだjQueryとeorzeadbを使う
+      const $ = (window as any).jQuery;
+      const edb = (window as any).eorzeadb;
+      if (!$ || !edb) return;
+
       if (!tooltipVisible) {
-        // 1回目: ツールチップ表示
-        link.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+        edb.show_tooltip($(link));
         tooltipVisible = true;
       } else {
-        // 2回目: ツールチップ非表示
-        link.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+        edb.hide_tooltip();
         tooltipVisible = false;
       }
     });
