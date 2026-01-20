@@ -182,9 +182,9 @@ export function createAggregator(deps: AggregatorDependencies): Aggregator {
      */
     async cleanup(): Promise<void> {
       console.log('[cleanup] Skipped');
-      // await db.delete(charactersGlamour);
-      // await db.delete(itemsCache);
-      // await db.delete(crawlProgress);
+      await db.delete(charactersGlamour);
+      await db.delete(itemsCache);
+      await db.delete(crawlProgress);
     },
   };
 }
