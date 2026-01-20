@@ -52,9 +52,9 @@ function getLodestoneUrl(id: string): string {
       <p class="text-sm text-muted-foreground">{slotName}</p>
       <h1 class="text-2xl font-bold">
         <a
+          id="item-title"
           href={getLodestoneUrl(itemInfo.itemId)}
           class="eorzeadb_link cursor-help"
-          onclick="event.preventDefault()"
         >
           {itemInfo.itemName}
         </a>
@@ -133,4 +133,22 @@ function getLodestoneUrl(id: string): string {
       </a>
     </div>
   </div>
+
+  <script>
+    const link = document.getElementById('item-title');
+    let tooltipVisible = false;
+
+    link?.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (!tooltipVisible) {
+        // 1回目: ツールチップ表示
+        link.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+        tooltipVisible = true;
+      } else {
+        // 2回目: ツールチップ非表示
+        link.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+        tooltipVisible = false;
+      }
+    });
+  </script>
 </BaseLayout>
