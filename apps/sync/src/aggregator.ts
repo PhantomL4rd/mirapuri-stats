@@ -178,7 +178,6 @@ export function createAggregator(deps: AggregatorDependencies): Aggregator {
     /**
      * Supabase のデータをクリーンアップ
      * characters_glamour, items_cache, crawl_progress を削除
-     * 集計処理が完成するまで無効化
      */
     async cleanup(): Promise<void> {
       console.log('[cleanup] Skipped');
