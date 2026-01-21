@@ -16,6 +16,7 @@
     "astro": "^5.16.11",
     "bits-ui": "^2.15.4",
     "clsx": "^2.1.1",
+    "dayjs": "^1.11.19",
     "lucide-svelte": "^0.562.0",
     "svelte": "^5.20.2",
     "tailwind-merge": "^3.4.0",
