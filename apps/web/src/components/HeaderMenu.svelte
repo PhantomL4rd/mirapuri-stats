@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Menu, MessageCircle, SwatchBook, X, Info, Sparkles } from 'lucide-svelte';
+  import { Menu, MessageCircle, SwatchBook, X, Info, Eye } from 'lucide-svelte';
   import SearchModal from './SearchModal.svelte';
   import VersionPicker from './VersionPicker.svelte';
 
@@ -67,20 +67,20 @@
 
     <nav class="p-2">
       <a
+        href="/hidden-gems"
+        class="flex items-center gap-3 rounded-md px-3 py-3 text-sm hover:bg-accent transition-colors"
+        onclick={closeMenu}
+      >
+        <Eye class="size-5" />
+        名脇役ランキング
+      </a>
+      <a
         href="/readme"
         class="flex items-center gap-3 rounded-md px-3 py-3 text-sm hover:bg-accent transition-colors"
         onclick={closeMenu}
       >
         <Info class="size-5" />
         このサイトについて
-      </a>
-      <a
-        href="/hidden-gems"
-        class="flex items-center gap-3 rounded-md px-3 py-3 text-sm hover:bg-accent transition-colors"
-        onclick={closeMenu}
-      >
-        <Sparkles class="size-5" />
-        名脇役ランキング
       </a>
       <p class="px-3 py-2 text-xs text-muted-foreground">外部リンク</p>
       <a
