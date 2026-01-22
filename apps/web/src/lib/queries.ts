@@ -44,7 +44,7 @@ export async function getVersatilityRanking(
     LEFT JOIN (
       SELECT partner_item_id, COUNT(*) AS versatility_score
       FROM pairs
-      WHERE version = ? AND rank <= 3
+      WHERE version = ? AND rank <= 5
       GROUP BY partner_item_id
     ) v ON u.item_id = v.partner_item_id
     WHERE u.version = ?
@@ -240,7 +240,7 @@ export async function getSupportingActorRanking(
     INNER JOIN (
       SELECT partner_item_id, COUNT(*) AS versatility_score
       FROM pairs
-      WHERE version = ? AND rank > 3
+      WHERE version = ? AND rank > 5
       GROUP BY partner_item_id
     ) v ON u.item_id = v.partner_item_id
     WHERE u.version = ?

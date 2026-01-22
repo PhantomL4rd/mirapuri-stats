@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Menu, MessageCircle, SwatchBook, X, Info, Eye } from 'lucide-svelte';
+  import { Menu, MessageCircle, SwatchBook, X, Info, Ghost } from 'lucide-svelte';
   import SearchModal from './SearchModal.svelte';
   import VersionPicker from './VersionPicker.svelte';
 
@@ -71,7 +71,7 @@
         class="flex items-center gap-3 rounded-md px-3 py-3 text-sm hover:bg-accent transition-colors"
         onclick={closeMenu}
       >
-        <Eye class="size-5" />
+        <Ghost class="size-5" />
         名脇役ランキング
       </a>
       <a
