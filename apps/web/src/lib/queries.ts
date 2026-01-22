@@ -44,7 +44,7 @@ export async function getVersatilityRanking(
     LEFT JOIN (
       SELECT partner_item_id, COUNT(*) AS versatility_score
       FROM pairs
-      WHERE version = ? AND rank <= 5
+      WHERE version = ? AND rank <= 3
       GROUP BY partner_item_id
     ) v ON u.item_id = v.partner_item_id
     WHERE u.version = ?
@@ -208,6 +208,65 @@ function hiraganaToKatakana(str: string): string {
  * @param limit 最大件数
  * @param version バージョン（省略時は active_version）
  */
+/**
+ * 名脇役ランキング（Hidden Gems）を取得
+ * pairs テーブルで rank > 3（4位以下）として多く登場するアイテム
+ *
+ * @param db D1Database
+ * @param slotId フィルタするスロットID（1-5）、nullで全スロット
+ * @param limit 取得件数
+ * @param version バージョン（省略時は active_version）
+ */
+export async function getSupportingActorRanking(
+  db: D1Database,
+  slotId: number | null = 2,
+  limit = 10,
+  version?: string,
+): Promise<VersatilityItem[]> {
+  const v = version ?? (await getActiveVersion(db));
+
+  // スロットフィルタの条件
+  const slotCondition = slotId !== null ? 'AND u.slot_id = ?' : '';
+  const bindings = slotId !== null ? [v, v, slotId, limit] : [v, v, limit];
+
+  const query = `
+    SELECT
+      u.item_id,
+      i.name AS item_name,
+      i.slot_id,
+      COALESCE(v.versatility_score, 0) AS versatility_score
+    FROM usage u
+    INNER JOIN items i ON u.item_id = i.id
+    INNER JOIN (
+      SELECT partner_item_id, COUNT(*) AS versatility_score
+      FROM pairs
+      WHERE version = ? AND rank > 3
+      GROUP BY partner_item_id
+    ) v ON u.item_id = v.partner_item_id
+    WHERE u.version = ?
+      ${slotCondition}
+    ORDER BY versatility_score DESC, u.usage_count DESC
+    LIMIT ?
+  `;
+
+  const result = await db
+    .prepare(query)
+    .bind(...bindings)
+    .all<{
+      item_id: string;
+      item_name: string;
+      slot_id: number;
+      versatility_score: number;
+    }>();
+
+  return (result.results ?? []).map((row) => ({
+    itemId: row.item_id,
+    itemName: row.item_name,
+    slotId: row.slot_id,
+    versatilityScore: row.versatility_score,
+  }));
+}
+
 export async function searchItems(
   db: D1Database,
   query: string,

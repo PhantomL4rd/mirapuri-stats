@@ -1,0 +1,53 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PrivacyRibbon from '../components/PrivacyRibbon.astro';
+import SlotTabs from '../components/SlotTabs.svelte';
+import VersatilityRanking from '../components/VersatilityRanking.astro';
+import { getSupportingActorRanking, getDataFreshness } from '../lib/queries';
+import { SLOT_IDS, getQueryVersion, getAvailableVersions } from '../lib/db';
+
+// クエリパラメータからスロットとバージョンを取得
+const url = new URL(Astro.request.url);
+const slotParam = url.searchParams.get('slot') ?? 'body';
+const versionParam = url.searchParams.get('version');
+const currentSlot = slotParam as keyof typeof SLOT_IDS;
+const slotId = SLOT_IDS[currentSlot] ?? 2;
+
+// D1からデータ取得
+const db = Astro.locals.runtime.env.DB;
+let items: Awaited<ReturnType<typeof getSupportingActorRanking>> = [];
+let versions: Awaited<ReturnType<typeof getAvailableVersions>> = [];
+let freshness: Awaited<ReturnType<typeof getDataFreshness>> = { dataFrom: null, dataTo: null };
+let currentVersion = '';
+
+try {
+  // バージョン一覧を取得し、リクエストされたバージョンを検証
+  versions = await getAvailableVersions(db);
+  currentVersion = await getQueryVersion(db, versionParam);
+
+  // 指定バージョンでデータ取得
+  [items, freshness] = await Promise.all([
+    getSupportingActorRanking(db, slotId, 10, currentVersion),
+    getDataFreshness(db, currentVersion),
+  ]);
+} catch (e) {
+  console.error('D1 query error:', e);
+}
+---
+
+<BaseLayout title={`名脇役ランキング | ミラプリインサイト`} versions={versions} currentVersion={currentVersion} freshness={freshness}>
+  <PrivacyRibbon slot="ribbon" />
+
+  <div class="space-y-6">
+    <div>
+      <h1 class="text-2xl font-bold">名脇役ランキング</h1>
+      <p class="mt-1 text-sm text-muted-foreground">
+        4位以下で多く登場する隠れた実力派アイテム
+      </p>
+    </div>
+
+    <SlotTabs currentSlot={currentSlot} basePath="/hidden-gems" client:load />
+
+    <VersatilityRanking items={items} />
+  </div>
+</BaseLayout>

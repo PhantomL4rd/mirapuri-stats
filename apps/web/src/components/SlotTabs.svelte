@@ -3,9 +3,10 @@
 
   interface Props {
     currentSlot: string;
+    basePath?: string;
   }
 
-  let { currentSlot }: Props = $props();
+  let { currentSlot, basePath = '/' }: Props = $props();
 
   const slots = [
     { slug: 'body', name: '胴' },
@@ -19,7 +20,7 @@
 <div class="flex gap-1 border-b border-border">
   {#each slots as slot}
     <a
-      href={`/?slot=${slot.slug}`}
+      href={`${basePath}?slot=${slot.slug}`}
       class={cn(
         'px-4 py-2 text-sm font-medium transition-colors',
         currentSlot === slot.slug

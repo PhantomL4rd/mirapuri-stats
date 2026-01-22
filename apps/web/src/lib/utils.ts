@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
+import { twMerge } from 'tailwind-merge';
 
 dayjs.extend(isoWeek);
 
