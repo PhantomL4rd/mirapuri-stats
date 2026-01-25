@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PrivacyRibbon from '../../components/PrivacyRibbon.astro';
 import { ArrowLeft } from 'lucide-svelte';
-import { getItemInfo, getPartnerItems, getDataFreshness } from '../../lib/queries';
+import { getItemInfo, getPartnerItems, getDataFreshness, getSimilarItems } from '../../lib/queries';
 import { SLOT_NAMES, getQueryVersion, getAvailableVersions } from '../../lib/db';
 
 const { itemId } = Astro.params;
@@ -21,10 +21,11 @@ const db = Astro.locals.runtime.env.DB;
 const versions = await getAvailableVersions(db);
 const currentVersion = await getQueryVersion(db, versionParam);
 
-const [itemInfo, partnerItems, freshness] = await Promise.all([
+const [itemInfo, partnerItems, freshness, similarItems] = await Promise.all([
   getItemInfo(db, itemId),
   getPartnerItems(db, itemId, 10, currentVersion),
   getDataFreshness(db, currentVersion),
+  getSimilarItems(db, itemId, 3, currentVersion),
 ]);
 
 if (!itemInfo) {
@@ -139,6 +140,32 @@ function getLodestoneUrl(id: string): string {
         )
       }
     </div>
+
+    {similarItems.length > 0 && (
+      <div class="space-y-3">
+        <h2 class="text-lg font-semibold text-card-foreground">着こなしの似た装備</h2>
+        <ul class="space-y-2">
+          {similarItems.map((item) => (
+            <li class="flex items-center gap-3 rounded-lg border border-border bg-card p-3 shadow-sm">
+              <a
+                href={`/item/${item.itemId}`}
+                class="flex-1 font-medium text-card-foreground hover:underline"
+              >
+                {item.itemName}
+              </a>
+              <a
+                href={getLodestoneUrl(item.itemId)}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="eorzeadb_link text-xs text-muted-foreground hover:text-foreground"
+              >
+                Lodestone
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
 
     <div class="pt-4">
       <a href="/" class="text-sm text-muted-foreground hover:underline inline-flex items-center gap-1">

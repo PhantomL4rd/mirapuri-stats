@@ -346,3 +346,84 @@ export async function searchItems(
     slotId: row.slot_id,
   }));
 }
+
+/**
+ * 類似アイテム（着こなしが似ているアイテム）
+ */
+export interface SimilarItem {
+  itemId: string;
+  itemName: string;
+  slotId: number;
+  /** 類似度スコア（共通パートナーアイテムのペアカウント合計） */
+  similarityScore: number;
+}
+
+/**
+ * 指定アイテムと「着こなしが似ている」アイテムを取得
+ * 共通のパートナーアイテムを多く持つアイテムほど類似度が高い
+ *
+ * @param db D1Database
+ * @param itemId 対象アイテムID
+ * @param limit 取得件数（デフォルト3、最大20）
+ * @param version バージョン（省略時は active_version）
+ */
+export async function getSimilarItems(
+  db: D1Database,
+  itemId: string,
+  limit = 3,
+  version?: string,
+): Promise<SimilarItem[]> {
+  const v = version ?? (await getActiveVersion(db));
+
+  // ターゲットアイテムのスロットIDを取得
+  const targetItem = await getItemInfo(db, itemId);
+  if (!targetItem) {
+    return [];
+  }
+
+  const query = `
+    WITH target_partners AS (
+      SELECT partner_item_id AS partner_id, pair_count
+      FROM pairs
+      WHERE version = ? AND base_item_id = ?
+    ),
+    candidate_scores AS (
+      SELECT
+        p.base_item_id AS similar_item,
+        SUM(MIN(tp.pair_count, p.pair_count)) AS score
+      FROM pairs p
+      INNER JOIN target_partners tp ON p.partner_item_id = tp.partner_id
+      WHERE p.version = ?
+        AND p.base_item_id <> ?
+      GROUP BY p.base_item_id
+    )
+    SELECT
+      cs.similar_item AS item_id,
+      i.name AS item_name,
+      i.slot_id,
+      cs.score AS similarity_score
+    FROM candidate_scores cs
+    INNER JOIN items i ON cs.similar_item = i.id
+    INNER JOIN usage u ON cs.similar_item = u.item_id AND u.version = ?
+    WHERE i.slot_id = ?
+    ORDER BY cs.score DESC, u.usage_count DESC
+    LIMIT ?
+  `;
+
+  const result = await db
+    .prepare(query)
+    .bind(v, itemId, v, itemId, v, targetItem.slotId, limit)
+    .all<{
+      item_id: string;
+      item_name: string;
+      slot_id: number;
+      similarity_score: number;
+    }>();
+
+  return (result.results ?? []).map((row) => ({
+    itemId: row.item_id,
+    itemName: row.item_name,
+    slotId: row.slot_id,
+    similarityScore: row.similarity_score,
+  }));
+}
