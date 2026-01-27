@@ -2,8 +2,8 @@ name: Supabase Keep-Alive
 
 on:
   schedule:
-    # Monday and Thursday at 9:00 UTC (18:00 JST)
-    - cron: '0 9 * * 1,4'
+    # Every 2 days at 9:00 UTC (18:00 JST)
+    - cron: '0 0 */3 * *'
   workflow_dispatch: # Manual trigger
 
 jobs:
@@ -13,4 +13,4 @@ jobs:
       - name: Ping Supabase
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: psql "$DATABASE_URL" -c "SELECT 1;"
+        run: psql "$DATABASE_URL" -c "SELECT COUNT(*) FROM crawl_progress LIMIT 1;"
