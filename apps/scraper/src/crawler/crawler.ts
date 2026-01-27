@@ -6,7 +6,7 @@ import type { SearchKeyGenerator } from './search-key-generator';
 import { DEFAULT_SEED } from './shuffle';
 
 /** デフォルトのキャラクター数上限 */
-export const DEFAULT_LIMIT = 10000;
+export const DEFAULT_LIMIT = 15000;
 
 /** 終了理由 */
 export type ExitReason = 'COMPLETED' | 'LIMIT_REACHED';
@@ -17,7 +17,7 @@ export type ExitReason = 'COMPLETED' | 'LIMIT_REACHED';
 export interface CrawlerConfig {
   crawlerName: string;
   dryRun: boolean;
-  /** キャラクター数上限（デフォルト: 10000） */
+  /** キャラクター数上限（デフォルト: 15000） */
   limit?: number;
   /** シャッフル用シード値（デフォルト: 42） */
   seed?: number;
